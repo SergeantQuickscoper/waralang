@@ -1,7 +1,0 @@
-/*
-This file will represent an ASCII grid of the NITW campus alongside a decided standard
-for 'walkable areas for characters', 'buildings', 'intersections' and so on. The wmap
-file format will probably not follow C-style comments in the future so this will have
-to be rewritten in the future.
-*/
-

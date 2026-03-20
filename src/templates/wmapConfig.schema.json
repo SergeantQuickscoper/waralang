@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Schema for wmapConfig.json",
+  "type": "object",
+  "properties": {
+    "buildingSymbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1,
+      "description": "Symbol used to denote buildings in the ASCII map.",
+      "default":"$"
+    },
+    "junctionSymbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1,
+      "description": "Symbol used to denote junctions in the ASCII map. Junctions are cells where an actor can change direction.",
+      "default":"+"
+    },
+    "colliders":{
+        "type":"array",
+        "default": ["|", "—", "/", "\\"],
+        "description": "Symbols that the actors will collide with."
+    },
+    "wordSize":{
+        "type":"object",
+        "properties": {
+            "baseaddress":{
+                "type":"integer",
+                "default":5,
+                "description": "building code"
+            },
+            "subaddress":{
+                "type":"integer",
+                "default":11,
+                "description": "address of the specific word in the building."
+            }
+        },
+        "description": "word size for primary memory."
+    },
+    "spawn":{
+        "type":"object",
+        "properties": {
+            "x":{
+                "type":"integer",
+                "description": "x coordinate of spawn point of actors. x=0 is left border of map",
+                "minimum": 0
+            },
+            "y":{
+                "type":"integer",
+                "description": "y coordinate of spawn point of actors. y=0 is top border of map",
+                "minimum": 0
+            },
+            "direction":{
+                "type":"string",
+                "enum":["<", ">", "v", "^"],
+                "description": "default direction the actors will move in upon spawning. <: left, >: right, v: down, ^: up"
+            }
+        },
+        "required": ["x", "y", "direction"]
+    },
+    "buildings":{
+        "type": "array",
+        "items":{
+            "type":"object",
+            "properties": {
+                "FUNC":{
+                    "type":"object",
+                    "properties": {
+                        "opcodeList":{
+                            "type":"array",
+                            "description": "OPCODE array for function.",
+                            "items": {
+                                "type":"string",
+                                "minLength": 1
+                            }
+                        }
+                    },
+                    "required": ["opcodeList"],
+                    "description": "Function."
+                },
+                "MEM":{
+                    "type":"object",
+                    "properties": {
+                        "baseaddress":{
+                            "type":"string",
+                            "description": "Base address for building.",
+                            "minLength": 1
+                        },
+                        "size":{
+                            "type":"integer",
+                            "description": "Number of words this building has."
+                        }
+                    },
+                    "required": ["baseaddress", "size"],
+                    "description": "Memory."
+                },
+                "REG":{
+                    "type":"object",
+                    "properties": {
+                        "baseaddress":{
+                            "type":"string",
+                            "description": "Base address for building.",
+                            "minLength": 1
+                        }
+                    },
+                    "required": ["baseaddress"],
+                    "description": "Register."
+                }
+            },
+            "oneOf": [
+                {"required":["FUNC"]},
+                {"required": ["MEM"]},
+                {"required": ["REG"]}
+            ]
+        }
+    }
+  },
+  "required": ["buildings", "spawn"]
+}

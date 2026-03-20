@@ -45,14 +45,15 @@ Here is a brief description of the contents of the binary file, in order:
   - 1 byte for the ASCII symbol on the map.
   - `bidSize` bytes will be used to specify the the bid the cell belongs to.
 
-- `bidMap` - bytes - Specifies information on the opcode sequence associated
-  with each bid, excluding the reserved bids. The map is an ordered one with
-  the first map corresponding to the first bid, and so on. The functionality
-  for a singular bid can be categorized into three types - a `FUNC` type used
-  to perform some generic functionality, a `MEM` type marking that this
-  building is meant to be used as primary memory, and a `REG` type for
-  buildings meant to be used as registers. In general the format for a bid to
-  opcode map is as follows:
+- `bidMap` - (Size depends on bid type please see below) - Specifies
+  information on the opcode sequence associated with each bid, excluding the
+  reserved bids. The map is an ordered one with the first map corresponding
+  to the first bid, and so on. The functionality for a singular bid can be
+  categorized into three types - a `FUNC` type used to perform some generic
+  functionality, a `MEM` type marking that this building is meant to be used
+  as primary memory, and a `REG` type for buildings meant to be used as registers.
+  In general the format for a bid to opcode map is as follows:
+
   - `opcodeBytes` - 1 byte - Specifies the amount of bytes the current opcode
   sequence length is taking up.
   - `opcodeLength` - `opcodeBytes` bytes - Specifies the length of the current

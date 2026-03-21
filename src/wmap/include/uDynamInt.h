@@ -27,4 +27,5 @@ uDynamInt* killUDynamicInt(uDynamInt* obj);
 // returns 0 if not equal, 1 if yes
 uint8_t isEqual(uDynamInt* val1, uDynamInt* val2);
 
+void printNum(uDynamInt* obj);
 #endif

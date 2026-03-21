@@ -6,15 +6,20 @@
 #include <stdint.h>
 #include <uDynamInt.h>
 
+/*
+    We will use a NULL bid pointer to represent buildings whose
+    bids have not been set by the dfs procedure.
+*/
 typedef struct {
     char symbol;
     uDynamInt* bid;
 } mapCell;
 
+
 typedef struct {
-    void* width;
-    void* height;
-    void*** mapMatrix;
+    uDynamInt* width;
+    uDynamInt* height;
+    mapCell* mapMatrix;
 } mapData;
 
 /*
@@ -23,7 +28,7 @@ typedef struct {
   while encoding, after all our upper limit of 2^4096 bytes of
   map data is not a concern rn :D
 */
-mapData* loadMapData();
+uint8_t initializeMapData(FILE* txtFile);
 
 uint8_t calculateBidByteSize();
 

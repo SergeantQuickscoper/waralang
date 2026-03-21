@@ -1,7 +1,7 @@
 #ifndef UDYNAMIC_INT
 #define UDYNAMIC_INT
 #include <stdint.h>
-
+#include <stddef.h>
 /*
     Functions to execute ops on uDynamicInt, which is a dumb name because for
     the scope of `waralang` this is just a counter variable. Unsigned and
@@ -28,4 +28,7 @@ uDynamInt* killUDynamicInt(uDynamInt* obj);
 uint8_t isEqual(uDynamInt* val1, uDynamInt* val2);
 
 void printNum(uDynamInt* obj);
+
+size_t* uDynamIntToSizeT(uDynamInt* obj);
+
 #endif

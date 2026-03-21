@@ -61,3 +61,17 @@ uDynamInt* killUDynamicInt(uDynamInt* obj){
     free(obj);
     return NULL;
 }
+
+uint8_t isEqual(uDynamInt* val1, uDynamInt* val2){
+    if(val1->size != val2->size){
+        return 0;
+    }
+    for(uint8_t i = 0; i < val1->size; i++){
+        if(*(val1->base + i) != *(val2->base + i)){
+            return 0;
+        }
+    }
+    return 1;
+}
+
+

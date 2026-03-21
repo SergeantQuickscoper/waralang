@@ -15,3 +15,4 @@ wcoder: $(WMAP_ENCODER_SOURCE) | $(BIN_DIR)
 
 clean:
 	rm -rf ./bin
+	rm *.wmap

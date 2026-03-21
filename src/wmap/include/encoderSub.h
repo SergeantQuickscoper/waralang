@@ -17,6 +17,14 @@ typedef struct {
     void*** mapMatrix;
 } mapData;
 
+/*
+  ideally we should implement some kind of chunking here but
+  for now it should be fine to load the entire map into memory
+  while encoding, after all our upper limit of 2^4096 bytes of
+  map data is not a concern rn :D
+*/
+mapData* loadMapData();
+
 uint8_t calculateBidByteSize();
 
 #endif

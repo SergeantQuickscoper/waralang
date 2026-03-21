@@ -34,6 +34,7 @@ Here is a brief description of the contents of the binary file, in order:
 
 - `startY` - `heightBytes` bytes - Specifies the starting y-coordinate.
 
+- `direction` - 1 byte - Specify the initial direction of travel. ^ > v <.
 - `wordSizeBytes` - 1 byte - Specifies the amount of bytes for the wordSize.
 
 - `wordSize` - `wordSizeBytes` bytes - Specifies the wordsize for the map.

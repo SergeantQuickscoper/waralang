@@ -24,4 +24,7 @@ uDynamInt* incrementValUDynamInt(uDynamInt* obj);
 // convienience method
 uDynamInt* killUDynamicInt(uDynamInt* obj);
 
+// returns 0 if not equal, 1 if yes
+uint8_t isEqual(uDynamInt* val1, uDynamInt* val2);
+
 #endif

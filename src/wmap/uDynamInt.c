@@ -74,4 +74,42 @@ uint8_t isEqual(uDynamInt* val1, uDynamInt* val2){
     return 1;
 }
 
+void printNum(uDynamInt* obj){
+    if(obj == NULL){
+        fprintf(stderr, "uDynamInt print error! Null object received.");
+        return;
+    }
+    uDynamInt* temp = createUDynamInt(obj->size);
+    memcpy(temp->base, obj->base, sizeof(uint8_t) * obj->size);
+    // max should be around 617 ish (TODO: take a log10 based on size)
+    // and divide into brackets to make this more efficient.
+    int8_t digits[618];
+    int16_t currDigits = 0;
 
+    while(1){
+        uint16_t remComb = 0;
+        uint8_t allZeros = 1;
+        for(uint8_t i = 0; i < obj->size; i++){
+            if(*(temp->base + i) != 0){
+                allZeros = 0;
+                break;
+            }
+        }
+        if(allZeros == 1) break;
+
+        // one long div cycle
+        for(int16_t i = obj->size - 1; i >= 0; i--){
+            uint16_t currToDiv = remComb * 256 + *(temp->base + i);
+            uint8_t rem = currToDiv % 10;
+            *(temp->base + i) = currToDiv/10;
+            remComb = rem;
+        }
+
+        digits[currDigits++] = remComb;
+    }
+    for(int16_t i = currDigits - 1; i >= 0; i--){
+        fprintf(stderr, "%d", digits[i]);
+    }
+    free(temp->base);
+    free(temp);
+}

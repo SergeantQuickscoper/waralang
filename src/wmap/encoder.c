@@ -57,8 +57,13 @@ int main(int argc, char** argv){
     while((c = fgetc(mapTextFile)) != EOF){
         if(c > 127){
             fprintf(stderr, "Invalid non-ASCII character detected! Please"
-                " fix your text files!\n Character seen: %c, Col: %d, on"
-                " Line %d", c, *(widthCheck->base) + 1, *(height->base) + 1);
+                " fix your text files!\n Character seen: %c, Col: ", c);
+            incrementValUDynamInt(widthCheck);
+            incrementValUDynamInt(height);
+            printNum(widthCheck);
+            fprintf(stderr, ", Line: ");
+            printNum(height);
+            fprintf(stderr, "\n");
             return 1;
         }
         if(c == 10){
@@ -68,7 +73,9 @@ int main(int argc, char** argv){
                 // check if width is diff than master width.
                 if(isEqual(width, widthCheck) == 0){
                     fprintf(stderr, "%s error! Text file contains lines of"
-                        " different sizes!, on Line: %d\n", appName, *(height->base) + 1);
+                        " different sizes!, on Line: ", appName);
+                    printNum(height);
+                    fprintf(stderr, "\n");
                     return 1;
                 }
 

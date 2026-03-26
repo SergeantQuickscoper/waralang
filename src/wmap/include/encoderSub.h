@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <uDynamInt.h>
+#include <json-c/json.h>
 
 /*
     We will use a NULL bid pointer to represent buildings whose
@@ -15,11 +16,23 @@ typedef struct {
     uDynamInt* bid;
 } mapCell;
 
+typedef struct{
+    uDynamInt* bid;
+    uDynamInt* opcodeCount;
+    uint8_t* opcodes;
+    uint8_t baseAddressBytes;
+    char* baseAddress;
+    uint8_t memSizeBytes;
+    uint8_t* memSize;
+} bidMap;
+
 
 typedef struct {
     uDynamInt* width;
     uDynamInt* height;
     mapCell* mapMatrix;
+    bidMap* buildings;
+    uDynamInt* bidCount;
 } mapData;
 
 /*
@@ -28,7 +41,7 @@ typedef struct {
   while encoding, after all our upper limit of 2^4096 bytes of
   map data is not a concern rn :D
 */
-uint8_t initializeMapData(FILE* txtFile);
+mapData* initializeMapData(FILE* mapTextFile, json_object* configObj);
 
 uint8_t calculateBidByteSize();
 

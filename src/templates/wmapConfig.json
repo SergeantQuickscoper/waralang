@@ -1,0 +1,26 @@
+{
+    "$schema": "./wmapConfig.schema.json",
+    "spawn": {
+        "x":0,
+        "y":0,
+        "direction":">"
+    },
+    "buildings": [
+        {
+            "FUNC":{
+                "opcodeList": ["ADD", "MULT"]
+            },
+            "dnak":{}
+        },
+        {
+            "FUNC":{
+                "opcodeList": ["ADD"]
+            }
+        },
+        {
+            "FUNC":{
+                "opcodeList": ["ADD"]
+            }
+        }
+    ]
+}

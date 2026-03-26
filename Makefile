@@ -11,7 +11,7 @@ $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
 
 wcoder: $(WMAP_ENCODER_SOURCE) | $(BIN_DIR)
-	$(CC) $(WMAP_CC_FLAGS) $(JSONC_CFLAGS) $(JSONC_LIBS) $(WMAP_ENCODER_SOURCE) -o ./bin/$@
+	$(CC) $(WMAP_CC_FLAGS) $(JSONC_CFLAGS) $(WMAP_ENCODER_SOURCE) $(JSONC_LIBS) -o ./bin/$@
 
 clean:
 	rm -rf ./bin

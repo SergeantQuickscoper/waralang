@@ -19,6 +19,11 @@
     },
     "colliders":{
         "type":"array",
+        "items": {
+            "type":"string",
+            "maxLength": 1,
+            "minLength": 1
+        },
         "default": ["|", "—", "/", "\\"],
         "description": "Symbols that the actors will collide with."
     },

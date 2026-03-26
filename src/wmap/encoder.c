@@ -3,7 +3,6 @@
 #include "messages.h"
 #include "encoderSub.h"
 #include "uDynamInt.h"
-#include <json-c/json.h>
 
 int main(int argc, char** argv){
     char* appName = "wcoder";
@@ -23,15 +22,27 @@ int main(int argc, char** argv){
 
     FILE* mapTextFile = fopen(mapTextPath, "r");
 
-    // json-c magic should handle this
-    FILE* mapConfigFile = fopen(mapConfigPath, "r");
+    json_object* configObj = json_object_from_file(mapConfigPath);
 
     if(mapTextFile == NULL){
         printTextFileError(appName, argv[1]);
         return 1;
     }
 
-    uint8_t mapStatus = initializeMapData(mapTextFile);
+    if(configObj == NULL){
+        printTextFileError(appName, argv[2]);
+        return 1;
+    }
 
-    return ~mapStatus;
+    
+    mapData* map = initializeMapData(mapTextFile, configObj);
+
+    fclose(mapTextFile);
+    //free memory allocated to configObj. Should free up all variables derived from this too.
+    json_object_put(configObj);
+
+    if(map == NULL){
+        return 1;
+    }
+    return 0;
 }

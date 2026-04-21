@@ -107,9 +107,11 @@ void printNum(uDynamInt* obj){
 
         digits[currDigits++] = remComb;
     }
+    // TODO: unsinged int optimize? lmao
     for(int16_t i = currDigits - 1; i >= 0; i--){
         fprintf(stderr, "%d", digits[i]);
     }
+    if(currDigits == 0) fprintf(stderr, "0");
     free(temp->base);
     free(temp);
 }

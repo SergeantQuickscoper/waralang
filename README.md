@@ -5,4 +5,4 @@ A 2D esoteric programming language themed around the NITW campus. wip By CSES &l
 
 - `git`
 - `make`
-- `jsonc` (for wmap modules)
+- `json-c` (for wmap modules)

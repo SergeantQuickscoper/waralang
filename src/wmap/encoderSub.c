@@ -1,9 +1,6 @@
 #include <encoderSub.h>
 
 uint8_t initializeTextData(FILE* txtFile, mapData* map){
-
-    FILE* encodedwmap = fopen("./out.wmap", "wb");
-
     uDynamInt* height = createUDynamInt(sizeof(uint8_t));
     uDynamInt* width = createUDynamInt(sizeof(uint8_t));
     uDynamInt* widthCheck = createUDynamInt(sizeof(uint8_t));
@@ -13,21 +10,8 @@ uint8_t initializeTextData(FILE* txtFile, mapData* map){
         "map data.");
         return 0;
     }
-    mapData* obj = (mapData*)malloc(sizeof(mapData));
-    obj->height = height;
-    obj->width = width;
-    size_t* heightAlloc = uDynamIntToSizeT(height);
-    size_t* widthAlloc = uDynamIntToSizeT(width);
-    // TODO: manage this overflow risk.
-    obj->mapMatrix = (mapCell*)malloc(sizeof(mapCell) * (*heightAlloc) * (*widthAlloc));
-    if(obj->mapMatrix == NULL){
-        fprintf(stderr, "wmap error. Error allocating memory for map"
-            "processing.");
-        return 0;
-    }
 
     int c; // could reduce this uint8_t
-    mapCell* ptr = obj->mapMatrix;
     uint8_t gotWidth = 0;
     /*
         getting newline would be slightly different in UNIX and Windows due to
@@ -76,10 +60,6 @@ uint8_t initializeTextData(FILE* txtFile, mapData* map){
         else{
             if(gotWidth == 0) width = incrementValUDynamInt(width);
             else widthCheck = incrementValUDynamInt(widthCheck);
-            ptr->symbol = c;
-            // probably could set some bids based off of the json
-            // file here (for reserved bids)
-            ptr->bid = NULL;
         }
     }
 
@@ -90,15 +70,23 @@ uint8_t initializeTextData(FILE* txtFile, mapData* map){
         " widthBytes of 8. Please use a smaller .txt file.\n");
         return 0;
     }
+    size_t* heightAlloc = uDynamIntToSizeT(height);
+    size_t* widthAlloc = uDynamIntToSizeT(width);
+    if(heightAlloc == NULL || widthAlloc == NULL){
+        fprintf(stderr, "wmap error. Error with uDynamInt and map dimensions");
+        return 0;
+    }
+    // TODO: manage this overflow risk from multiplying size_ts
+    map->mapMatrix = (mapCell*)malloc(sizeof(mapCell) * (*heightAlloc)
+     * (*widthAlloc));
+    if(map->mapMatrix == NULL){
+        fprintf(stderr, "wmap error. Error allocating memory for map"
+            " processing.");
+        return 0;
+    }
 
-    // TODO: delegate this to some other function
-    fwrite(&height->size, sizeof(uint8_t), sizeof(uint8_t), encodedwmap);
-    fwrite(&width->size, sizeof(uint8_t), sizeof(uint8_t), encodedwmap);
-    // TODO: fill in bidByteSize here
-    fwrite(height->base, sizeof(uint8_t), height->size, encodedwmap);
-    fwrite(width->base, sizeof(uint8_t), width->size, encodedwmap);
-
-    fclose(encodedwmap);
+    map->height = height;
+    map->width = width;
     return 1;
 }
 
@@ -122,7 +110,7 @@ uint8_t validateJsonObject(json_object* obj, enum json_type desiredType, char* n
 //incomplete function
 uint8_t initializeConfigData(json_object* configObj, mapData* map){
     if(!validateJsonObject(configObj, json_type_object, "root")) return 0;
-    
+
     json_object* spawnObj = json_object_object_get(configObj, "spawn");
     if(!validateJsonObject(spawnObj, json_type_object, "spawn")) return 0;
 
@@ -181,12 +169,12 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
                 (map->buildings + i)->opcodeCount = opcodesCount;
 
                 (map->buildings + i)->opcodes = malloc( opcodeList->length * sizeof(uint8_t) );
-                
+
                 for(size_t j = 0; j<opcodeList->length; j++){
                     //as UINT8_MAX is a reserved opcode
                     uint8_t opcode = 0;
                     uint8_t opcodeMatched = 0;
-                    
+
                     json_object* opcodeObj = (json_object*)array_list_get_idx(opcodeList, j);
                     if(!validateJsonObject(opcodeObj, json_type_string, "opcode")) return 0;
                     const char* opcodestr = json_object_get_string(opcodeObj);
@@ -223,9 +211,9 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
 }
 
 mapData* initializeMapData(FILE* mapTextFile, json_object* configObj){
-    mapData* map = malloc(sizeof(mapData));
-    uint8_t mapStatus = initializeTextData(mapTextFile, map);
+    mapData* map = (mapData*)malloc((sizeof(mapData)));
     uint8_t configStatus = initializeConfigData(configObj, map);
+    uint8_t mapStatus = initializeTextData(mapTextFile, map);
     if(mapStatus == 0 || configStatus == 0)
         return NULL;
     return map;

@@ -107,9 +107,11 @@ void printNum(uDynamInt* obj){
 
         digits[currDigits++] = remComb;
     }
+    // TODO: unsinged int optimize? lmao
     for(int16_t i = currDigits - 1; i >= 0; i--){
         fprintf(stderr, "%d", digits[i]);
     }
+    if(currDigits == 0) fprintf(stderr, "0");
     free(temp->base);
     free(temp);
 }
@@ -119,7 +121,8 @@ size_t* uDynamIntToSizeT(uDynamInt* obj){
     if(obj == NULL) return NULL;
     if(obj->size > sizeof(size_t)) return NULL; // gonna overflow
     size_t* out = (size_t*)malloc(sizeof(size_t));
-    for(int i = obj->size - 1; i >= 0; i--){
+    *out = 0;
+    for(int16_t i = obj->size - 1; i >= 0; i--){
         *out = (*out << 8) | obj->base[i];
     }
     return out;

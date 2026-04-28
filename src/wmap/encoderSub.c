@@ -40,6 +40,8 @@ uint8_t fillBuildings(mapData* mapData){
             if((mapData->mapMatrix + i * (*widthS) + j)->symbol ==
             mapData->buildingPlaceHolder){
                 bidCount = incrementValUDynamInt(bidCount);
+                printNum(bidCount);
+                fprintf(stderr, "\n");
                 uDynamInt* currInd = copyUDynamInt(bidCount);
                 dfs(mapData, currInd, *heightS, *widthS, j, i);
             }

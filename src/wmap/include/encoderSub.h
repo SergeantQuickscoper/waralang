@@ -33,6 +33,7 @@ typedef struct {
     mapCell* mapMatrix;
     bidMap* buildings;
     uDynamInt* bidCount;
+    char buildingPlaceHolder;
 } mapData;
 
 /*

@@ -4,6 +4,9 @@
 #include <stdio.h>
 
 uDynamInt* createUDynamInt(uint8_t byteSize){
+    if(byteSize == 0){
+        fprintf(stderr, "Thats not how you use createUDynamInt!");
+    }
     uDynamInt* obj = malloc(sizeof(uDynamInt));
     if(obj == NULL) return NULL;
     obj->size = byteSize;
@@ -117,6 +120,8 @@ void printNum(uDynamInt* obj){
 }
 
 // conversion for allocation purposes :(
+// actually holy memory leak potential why tf did i make it a pointer.
+// eh ill change it later.
 size_t* uDynamIntToSizeT(uDynamInt* obj){
     if(obj == NULL) return NULL;
     if(obj->size > sizeof(size_t)) return NULL; // gonna overflow
@@ -126,4 +131,10 @@ size_t* uDynamIntToSizeT(uDynamInt* obj){
         *out = (*out << 8) | obj->base[i];
     }
     return out;
+}
+
+uDynamInt* copyUDynamInt(uDynamInt* obj){
+    uDynamInt* temp = createUDynamInt(obj->size);
+    memcpy(temp->base, obj->base, sizeof(uint8_t) * obj->size);
+    return temp;
 }

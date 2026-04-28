@@ -12,7 +12,7 @@ def convert(inputFile, outputFile):
                         newRow.append(" ")
                     else:
                         newRow.append(j)
-                new.write(" ".join(newRow) + '\n')
+                new.write("".join(newRow) + '\n')
 
 if __name__ == "__main__":
     convert(sys.argv[1], sys.argv[2])

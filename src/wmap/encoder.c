@@ -34,7 +34,6 @@ int main(int argc, char** argv){
         return 1;
     }
 
-    
     mapData* map = initializeMapData(mapTextFile, configObj);
 
     fclose(mapTextFile);

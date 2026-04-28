@@ -1,5 +1,57 @@
 #include <encoderSub.h>
 
+/*
+    Currently the dfs only checks the vertical and horizontal cells for the bid
+    symbol to be considered under building. This should probably be upto user
+    config though so leaving a TODO: modify the movesX and movesY arrays to
+    accomodate user configs and design how said configs are designed.
+*/
+void dfs(mapData* mapData, uDynamInt* currInd, size_t height, size_t width,
+    size_t currX, size_t currY){
+    if((mapData->mapMatrix + currY * width + currX)->symbol !=
+            mapData->buildingPlaceHolder){
+        return;
+    }
+    int8_t movesX[4] = {1, 0, -1, 0};
+    int8_t movesY[4] = {0, -1, 0, 1};
+    (mapData->mapMatrix + currY * width + currX)->symbol = 0; // arbitrary
+    (mapData->mapMatrix + currY * width + currX)->bid = currInd;
+    // TODO: do something about this magic number too when applying config.
+    // and the hardcoded invalid moves
+    for(uint8_t i = 0; i < 4; i++){
+        if(currX == 0 && movesX[i] == -1) continue;
+        if(currX == width - 1 && movesX[i] == 1) continue;
+        if(currY == 0 && movesY[i] == -1) continue;
+        if(currY == height - 1 && movesY[i] == 1) continue;
+        dfs(mapData, currInd, height, width, currX + movesX[i], currY + movesY[i]);
+    }
+}
+uint8_t fillBuildings(mapData* mapData){
+    if(mapData == NULL || mapData->height == NULL || mapData->width == NULL){
+        fprintf(stderr, "wmap encoder error! uninitialized values during DFS!"
+        );
+        return 0;
+    }
+    size_t* heightS = uDynamIntToSizeT(mapData->height);
+    size_t* widthS = uDynamIntToSizeT(mapData->width);
+    uDynamInt* bidCount = createUDynamInt(sizeof(uint8_t));
+    for(size_t i = 0; i < *heightS; i++){
+        for(size_t j = 0; j < *widthS; j++){
+            if((mapData->mapMatrix + i * (*widthS) + j)->symbol ==
+            mapData->buildingPlaceHolder){
+                bidCount = incrementValUDynamInt(bidCount);
+                printNum(bidCount);
+                fprintf(stderr, "\n");
+                uDynamInt* currInd = copyUDynamInt(bidCount);
+                dfs(mapData, currInd, *heightS, *widthS, j, i);
+            }
+        }
+    }
+    mapData->bidCount = bidCount;
+    free(heightS);
+    free(widthS);
+}
+
 uint8_t initializeTextData(FILE* txtFile, mapData* map){
     uDynamInt* height = createUDynamInt(sizeof(uint8_t));
     uDynamInt* width = createUDynamInt(sizeof(uint8_t));
@@ -76,7 +128,9 @@ uint8_t initializeTextData(FILE* txtFile, mapData* map){
         fprintf(stderr, "wmap error. Error with uDynamInt and map dimensions");
         return 0;
     }
-    // TODO: manage this overflow risk from multiplying size_ts
+    // TODO: manage this overflow risk from multiplying size_t's
+    map->height = height;
+    map->width = width;
     map->mapMatrix = (mapCell*)malloc(sizeof(mapCell) * (*heightAlloc)
      * (*widthAlloc));
     if(map->mapMatrix == NULL){
@@ -84,9 +138,15 @@ uint8_t initializeTextData(FILE* txtFile, mapData* map){
             " processing.");
         return 0;
     }
-
-    map->height = height;
-    map->width = width;
+    size_t ptr = 0;
+    fseek(txtFile, 0, SEEK_SET);
+    clearerr(txtFile);
+    while((c = fgetc(txtFile)) != EOF){
+        if(c == 10) continue;
+        mapCell* currCell = map->mapMatrix + ptr++;
+        currCell->symbol = c;
+    }
+    fillBuildings(map);
     return 1;
 }
 
@@ -212,9 +272,9 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
 
 mapData* initializeMapData(FILE* mapTextFile, json_object* configObj){
     mapData* map = (mapData*)malloc((sizeof(mapData)));
+    map->buildingPlaceHolder = '$'; // TODO: actually detect this in the below func.
     uint8_t configStatus = initializeConfigData(configObj, map);
     uint8_t mapStatus = initializeTextData(mapTextFile, map);
-    if(mapStatus == 0 || configStatus == 0)
-        return NULL;
+    if(mapStatus == 0 || configStatus == 0) return NULL;
     return map;
 }

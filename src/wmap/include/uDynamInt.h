@@ -21,6 +21,8 @@ uDynamInt* incrementSizeUDynamInt(uDynamInt* obj);
 
 uDynamInt* incrementValUDynamInt(uDynamInt* obj);
 
+uDynamInt* copyUDynamInt(uDynamInt* obj);
+
 // convienience method
 uDynamInt* killUDynamicInt(uDynamInt* obj);
 

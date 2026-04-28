@@ -44,7 +44,8 @@ Here is a brief description of the contents of the binary file, in order:
 - `cells` - `height` * `width` * (1 + `bidSize`) bytes - Specifies info about
   each cell in the map with each cell being 1 + `bidSize` bytes long and
   containing:
-  - 1 byte for the ASCII symbol on the map.
+  - 1 byte for the ASCII symbol on the map. The symbol for a building with a
+  bid will just be the placeholder character specified in the wmapConfig.json.
   - `bidSize` bytes will be used to specify the the bid the cell belongs to.
 
 - `bidMap` - (Size depends on bid type please see below) - Specifies

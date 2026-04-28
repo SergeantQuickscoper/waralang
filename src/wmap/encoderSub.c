@@ -26,6 +26,42 @@ void dfs(mapData* mapData, uDynamInt* currInd, size_t height, size_t width,
         dfs(mapData, currInd, height, width, currX + movesX[i], currY + movesY[i]);
     }
 }
+
+void printCurrMapMatrix(mapData* mapData){
+    if(mapData == NULL){
+        fprintf(stderr, "wmap encoder error while printing map!"
+        );
+    }
+    size_t* heightS = uDynamIntToSizeT(mapData->height);
+    size_t* widthS = uDynamIntToSizeT(mapData->width);
+    size_t counter = 0;
+    FILE* out = fopen("./currMapMatrix.txt", "w"); // hard
+    for(size_t i = 0; i < *heightS; i++){
+        for(size_t j = 0; j < *widthS; j++){
+            if(counter == *widthS){
+                counter = 0;
+                char new = '\n';
+                fwrite(&new, sizeof(char), 1, out);
+            }
+            if((mapData->mapMatrix + *widthS * i + j)->symbol == 0){
+                uDynamInt* bid = (mapData->mapMatrix + *widthS * i + j)->bid;
+                size_t* temp = uDynamIntToSizeT(bid);
+                char toPrint = 62 + *temp;
+                fwrite(&toPrint, sizeof(char), 1, out);
+                free(temp);
+            }
+            else{
+                fwrite(&((mapData->mapMatrix + *widthS * i + j)->symbol),
+                sizeof(char), 1, out);
+            }
+            counter++;
+        }
+    }
+    fclose(out);
+    free(heightS);
+    free(widthS);
+}
+
 uint8_t fillBuildings(mapData* mapData){
     if(mapData == NULL || mapData->height == NULL || mapData->width == NULL){
         fprintf(stderr, "wmap encoder error! uninitialized values during DFS!"
@@ -40,10 +76,15 @@ uint8_t fillBuildings(mapData* mapData){
             if((mapData->mapMatrix + i * (*widthS) + j)->symbol ==
             mapData->buildingPlaceHolder){
                 bidCount = incrementValUDynamInt(bidCount);
-                printNum(bidCount);
-                fprintf(stderr, "\n");
                 uDynamInt* currInd = copyUDynamInt(bidCount);
                 dfs(mapData, currInd, *heightS, *widthS, j, i);
+            }
+            else{
+                /*
+                  TODO: here would be a good place to decide whether a symbol
+                  is a traversable, collider or junction (reserved bid
+                  implementation).
+                */
             }
         }
     }
@@ -117,9 +158,9 @@ uint8_t initializeTextData(FILE* txtFile, mapData* map){
 
     widthCheck = killUDynamicInt(widthCheck);
     if(width->size > 8 || height->size > 8){
-        fprintf(stderr, "wcoder error. Unfortunately due to malloc constraints,"
-        " you will only be able to use .txt files that have a maximum heightBytes or"
-        " widthBytes of 8. Please use a smaller .txt file.\n");
+        fprintf(stderr, "wcoder error. Unfortunately due to malloc constraints"
+        " you will only be able to use .txt files that have a maximum "
+        " heightBytes or widthBytes of 8. Please use a smaller .txt file.\n");
         return 0;
     }
     size_t* heightAlloc = uDynamIntToSizeT(height);

@@ -33,4 +33,6 @@ void printNum(uDynamInt* obj);
 
 size_t* uDynamIntToSizeT(uDynamInt* obj);
 
+uDynamInt* sizeTToUDynamInt(size_t num);
+
 #endif

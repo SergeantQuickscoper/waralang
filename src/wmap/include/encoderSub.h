@@ -22,18 +22,34 @@ typedef struct{
     uint8_t* opcodes;
     uint8_t baseAddressBytes;
     char* baseAddress;
-    uint8_t memSizeBytes;
-    uint8_t* memSize;
+    uDynamInt* memSize;
 } bidMap;
 
 
 typedef struct {
+    //2D map
     uDynamInt* width;
     uDynamInt* height;
     mapCell* mapMatrix;
+
+    //buildings
     bidMap* buildings;
     uDynamInt* bidCount;
-    char buildingPlaceHolder;
+
+    //spawn
+    uDynamInt* spawnX;
+    uDynamInt* spawnY;
+    char spawnDirection;
+
+    //word size
+    uDynamInt* baseAddressSize;
+    uDynamInt* subAddressSize;
+
+    //symbols
+    char buildingSymbol;
+    char junctionSymbol;
+    uint8_t collidersBytes;
+    char* colliders;
 } mapData;
 
 /*

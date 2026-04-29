@@ -138,3 +138,9 @@ uDynamInt* copyUDynamInt(uDynamInt* obj){
     memcpy(temp->base, obj->base, sizeof(uint8_t) * obj->size);
     return temp;
 }
+
+//TODO: incharge of uDynamInt should implement this.
+//I'm putting a placeholder function for now
+uDynamInt* sizeTToUDynamInt(size_t num){
+    return createUDynamInt(sizeof(uint8_t));
+}

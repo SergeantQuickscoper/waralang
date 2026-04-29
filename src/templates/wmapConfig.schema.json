@@ -30,12 +30,12 @@
     "wordSize":{
         "type":"object",
         "properties": {
-            "baseaddress":{
+            "baseAddressSize":{
                 "type":"integer",
                 "default":5,
                 "description": "building code"
             },
-            "subaddress":{
+            "subAddressSize":{
                 "type":"integer",
                 "default":11,
                 "description": "address of the specific word in the building."
@@ -87,7 +87,7 @@
                 "MEM":{
                     "type":"object",
                     "properties": {
-                        "baseaddress":{
+                        "baseAddress":{
                             "type":"string",
                             "description": "Base address for building.",
                             "minLength": 1
@@ -97,19 +97,19 @@
                             "description": "Number of words this building has."
                         }
                     },
-                    "required": ["baseaddress", "size"],
+                    "required": ["baseAddress", "size"],
                     "description": "Memory."
                 },
                 "REG":{
                     "type":"object",
                     "properties": {
-                        "baseaddress":{
+                        "baseAddress":{
                             "type":"string",
                             "description": "Base address for building.",
                             "minLength": 1
                         }
                     },
-                    "required": ["baseaddress"],
+                    "required": ["baseAddress"],
                     "description": "Register."
                 }
             },

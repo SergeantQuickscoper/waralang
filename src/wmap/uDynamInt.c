@@ -124,3 +124,9 @@ size_t* uDynamIntToSizeT(uDynamInt* obj){
     }
     return out;
 }
+
+//TODO: incharge of uDynamInt should implement this.
+//I'm putting a placeholder function for now
+uDynamInt* sizeTToUDynamInt(size_t num){
+    return createUDynamInt(sizeof(uint8_t));
+}

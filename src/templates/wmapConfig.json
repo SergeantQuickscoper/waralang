@@ -1,25 +1,46 @@
 {
     "$schema": "./wmapConfig.schema.json",
+    "wordSize": {
+        "baseAddressSize": 5,
+        "subAddressSize": 1
+    },
     "spawn": {
-        "x":0,
-        "y":0,
-        "direction":">"
+        "x": 0,
+        "y": 0,
+        "direction": ">"
     },
     "buildings": [
         {
-            "FUNC":{
-                "opcodeList": ["ADD", "MULT"]
-            },
-            "dnak":{}
-        },
-        {
-            "FUNC":{
-                "opcodeList": ["ADD"]
+            "MEM": {
+                "baseAddress": "Abcshfdlnfldskfgihajubuegidfyueskghydfgbuiegbsfjkdcbdfsu",
+                "size": 100
             }
         },
         {
-            "FUNC":{
-                "opcodeList": ["ADD"]
+            "FUNC": {
+                "opcodeList": [
+                    "ADD",
+                    "MULT"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "REG": {
+                "baseAddress": "countryOven"
             }
         }
     ]

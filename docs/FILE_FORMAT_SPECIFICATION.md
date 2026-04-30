@@ -30,16 +30,28 @@ Here is a brief description of the contents of the binary file, in order:
 - `bidSize` - `bidBytes` bytes - Specifies the number of bytes used to
   represent a singular building on the ASCII map.
 
-- `startX` - `widthBytes` bytes - Specifies the starting x-coordinate.
+- `spawnX` - `widthBytes` bytes - Specifies the starting x-coordinate.
 
-- `startY` - `heightBytes` bytes - Specifies the starting y-coordinate.
+- `spawnY` - `heightBytes` bytes - Specifies the starting y-coordinate.
 
-- `direction` - 1 byte - Specify the initial direction of travel. ^ > v <.
+- `spawnDirection` - 1 byte - Specify the initial direction of travel. ^ > v <.
 
 - `wordSizeBytes` - 1 byte - Specifies the amount of bytes for the wordSize.
 
 - `wordSize` - `wordSizeBytes` bytes - Specifies the wordsize for the map.
   This will have an effect on how addresses work.
+
+- `buildingSymbol` - 1 byte - Specifies which ascii symbol denontes buildings
+  in the ascii map.
+
+- `junctionSymbol` - 1 byte - Specifies which ascii symbol denontes junctions
+  in the ascii map.
+
+- `collidersBytes` - 1 byte - Specifies how many ascii symbols denote
+  colliders.
+
+- `colliders` - `collidersBytes` bytes - A sequence of all the ascii characters
+  used to denote the colliders.
 
 - `cells` - `height` * `width` * (1 + `bidSize`) bytes - Specifies info about
   each cell in the map with each cell being 1 + `bidSize` bytes long and

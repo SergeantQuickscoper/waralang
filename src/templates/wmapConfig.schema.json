@@ -25,6 +25,8 @@
             "minLength": 1
         },
         "default": ["|", "—", "/", "\\"],
+        "minItems": 1,
+        "maxItems": 255,
         "description": "Symbols that the actors will collide with."
     },
     "wordSize":{
@@ -41,6 +43,7 @@
                 "description": "address of the specific word in the building."
             }
         },
+        "required": ["baseAddressSize", "subAddressSize"],
         "description": "word size for primary memory."
     },
     "spawn":{
@@ -121,5 +124,5 @@
         }
     }
   },
-  "required": ["buildings", "spawn"]
+  "required": ["buildings", "spawn", "buildingSymbol", "junctionSymbol", "colliders", "wordSize"]
 }

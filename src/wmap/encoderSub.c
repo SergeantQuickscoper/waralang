@@ -267,13 +267,13 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
     //because we are storing number of MEM buildings in size_t
     if(baseAddressSizeInt64>63){
         fprintf(stderr, "wcoder error. In config file: ");
-        fprintf(stderr, "baseAddressSize cannot be greater than 64.\n");
+        fprintf(stderr, "baseAddressSize cannot be greater than 63.\n");
         return 0;
     }
     size_t baseAddressSizeSizeT = (size_t)baseAddressSizeInt64;
     uDynamInt* baseAddressSizeUDynam = sizeTToUDynamInt(baseAddressSizeSizeT);
     map->baseAddressSize = baseAddressSizeUDynam;
-    size_t baseAddressMax = (1<<baseAddressSizeSizeT)-1;
+    size_t baseAddressMax = ((size_t)1<<baseAddressSizeSizeT)-1;
 
     json_object* subAddressSizeObj = json_object_object_get(wordSizeObj, "subAddressSize");
     if(!validateJsonObject(subAddressSizeObj, json_type_int, "subAddressSize")) return 0;
@@ -292,13 +292,13 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
     size_t subAddressSizeSizeT = (size_t)subAddressSizeInt64;
     uDynamInt* subAddressSizeUDynam = sizeTToUDynamInt(subAddressSizeSizeT);
     map->subAddressSize = subAddressSizeUDynam;
-    size_t subAddressMax = (1<<subAddressSizeSizeT)-1;
+    size_t subAddressMax = ((size_t)1<<subAddressSizeSizeT)-1;
 
     //symbols
     json_object* buildingSymbolObj = json_object_object_get(configObj, "buildingSymbol");
     if(!validateJsonObject(buildingSymbolObj, json_type_string, "buildingSymbol")) return 0;
     const char* buildingSymbolStr = json_object_get_string(buildingSymbolObj);
-    size_t buildingSymbolLen = sizeof(buildingSymbolStr)/sizeof(buildingSymbolStr[0]);
+    size_t buildingSymbolLen = json_object_get_string_len(buildingSymbolObj);
     if(buildingSymbolLen!=1){
         fprintf(stderr, "wcoder error. In config file: ");
         fprintf(stderr, "buildingSymbol should be 1 character string.\n");
@@ -309,7 +309,7 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
     json_object* junctionSymbolObj = json_object_object_get(configObj, "junctionSymbol");
     if(!validateJsonObject(junctionSymbolObj, json_type_string, "junctionSymbol")) return 0;
     const char* junctionSymbolStr = json_object_get_string(junctionSymbolObj);
-    size_t junctionSymbolLen = sizeof(junctionSymbolStr)/sizeof(junctionSymbolStr[0]);
+    size_t junctionSymbolLen = json_object_get_string_len(junctionSymbolObj);
     if(junctionSymbolLen!=1){
         fprintf(stderr, "wcoder error. In config file: ");
         fprintf(stderr, "junctionSymbol should be 1 character string.\n");
@@ -345,11 +345,11 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
         json_object* colliderObj = (json_object*)array_list_get_idx(collidersArr, i);
         if(!validateJsonObject(colliderObj, json_type_string, "collider")) return 0;
         const char* colliderStr = json_object_get_string(colliderObj);
-        size_t colliderLen = sizeof(colliderStr)/sizeof(colliderStr[0]);
+        size_t colliderLen = json_object_get_string_len(colliderObj);
 
         if(colliderLen!=1){
             fprintf(stderr, "wcoder error. In config file: ");
-            fprintf(stderr, "colliderSymbol should be 1 character string.\n");
+            fprintf(stderr, "colliderSymbols should be 1 character string each.\n");
             return 0;
         }
         if(colliderStr[0] == junctionSymbolStr[0]){
@@ -456,7 +456,7 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
                 json_object* baseAddressObj = json_object_object_get(buildingDetailsObj, "baseAddress");
                 if(!validateJsonObject(baseAddressObj, json_type_string, "MEM building baseAddress")) return 0;
                 const char* baseAddress = json_object_get_string(baseAddressObj);
-                size_t baseAddressLength = sizeof(baseAddress)/sizeof(baseAddress[0]);
+                size_t baseAddressLength = json_object_get_string_len(baseAddressObj);
 
                 if(baseAddressLength==0){
                     fprintf(stderr, "wcoder error. In config file: In building ");
@@ -475,14 +475,14 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
                     fprintf(stderr, "wcoder error. In config file: ");
                     fprintf(stderr, "number of MEM buildings exceed baseAddress wordSize capacity.");
                     fprintf(stderr, "current capacity: ");
-                    fprintf(stderr, "%ld\n", baseAddressMax);
+                    fprintf(stderr, "%zu\n", baseAddressMax);
                     fprintf(stderr, "increase baseAddressSize to increase capacity.");
                     return 0;
                 }
                 json_object* baseAddressObj = json_object_object_get(buildingDetailsObj, "baseAddress");
                 if(!validateJsonObject(baseAddressObj, json_type_string, "MEM building baseAddress")) return 0;
                 const char* baseAddress = json_object_get_string(baseAddressObj);
-                size_t baseAddressLength = sizeof(baseAddress)/sizeof(baseAddress[0]);
+                size_t baseAddressLength = json_object_get_string_len(baseAddressObj);
 
                 if(baseAddressLength==0){
                     fprintf(stderr, "wcoder error. In config file: In building ");
@@ -503,7 +503,7 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
                     fprintf(stderr, "wcoder error. In config file: In building ");
                     printNum(iuDynam);
                     fprintf(stderr, "\nMEM size too big. Max is: ");
-                    fprintf(stderr, "%ld.\n", subAddressMax);
+                    fprintf(stderr, "%zu.\n", subAddressMax);
                     fprintf(stderr, "increase subAddressSize to increase capacity.\n");
                     return 0;
                 }
@@ -528,7 +528,6 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
 
 mapData* initializeMapData(FILE* mapTextFile, json_object* configObj){
     mapData* map = (mapData*)malloc((sizeof(mapData)));
-    map->buildingSymbol = '$'; // TODO: actually detect this in the below func.
     uint8_t configStatus = initializeConfigData(configObj, map);
     uint8_t mapStatus = initializeTextData(mapTextFile, map);
     if(mapStatus == 0 || configStatus == 0) return NULL;

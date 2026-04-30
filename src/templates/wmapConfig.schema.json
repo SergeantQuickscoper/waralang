@@ -24,7 +24,7 @@
             "maxLength": 1,
             "minLength": 1
         },
-        "default": ["|", "—", "/", "\\"],
+        "default": ["|", "-", "/", "\\"],
         "minItems": 1,
         "maxItems": 255,
         "description": "Symbols that the actors will collide with."

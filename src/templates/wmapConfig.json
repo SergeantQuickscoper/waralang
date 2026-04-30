@@ -2,10 +2,10 @@
     "$schema": "./wmapConfig.schema.json",
     "buildingSymbol": "$",
     "junctionSymbol": "+",
-    "colliders": ["|", "—", "/", "\\"],
+    "colliders":  ["|", "-", "/", "\\"],
     "wordSize": {
-        "baseAddressSize": 5,
-        "subAddressSize": 1
+        "baseAddressSize": 50,
+        "subAddressSize": 62
     },
     "spawn": {
         "x": 0,
@@ -15,8 +15,26 @@
     "buildings": [
         {
             "MEM": {
-                "baseAddress": "Abcshfdlnfldskfgihajubuegidfyueskghydfgbuiegbsfjkdcbdfsu",
-                "size": 100
+                "baseAddress": "ISH",
+                "size": 1000000000000000000
+            }
+        },
+        {
+            "MEM": {
+                "baseAddress": "ISH",
+                "size": 1000000000000000000
+            }
+        },
+        {
+            "MEM": {
+                "baseAddress": "ISH",
+                "size": 1000000000000000000
+            }
+        },
+        {
+            "MEM": {
+                "baseAddress": "ISH",
+                "size": 1000000000000000000
             }
         },
         {
@@ -43,7 +61,7 @@
         },
         {
             "REG": {
-                "baseAddress": "countryOven"
+                "baseAddress": "COUNTRYOVEN"
             }
         }
     ]

@@ -27,39 +27,41 @@ void dfs(mapData* mapData, uDynamInt* currInd, size_t height, size_t width,
     }
 }
 
+/*
+    This function would honestly be pretty useful for debugging when trying to
+    create your own wmap. TODO: maybe look into adding this as a flag to output
+    the wmap into a file.
+*/
 void printCurrMapMatrix(mapData* mapData){
     if(mapData == NULL){
         fprintf(stderr, "wmap encoder error while printing map!"
         );
     }
-    size_t* heightS = uDynamIntToSizeT(mapData->height);
-    size_t* widthS = uDynamIntToSizeT(mapData->width);
+    size_t heightS = uDynamIntToSizeT(mapData->height);
+    size_t widthS = uDynamIntToSizeT(mapData->width);
     size_t counter = 0;
     FILE* out = fopen("./currMapMatrix.txt", "w"); // hard
-    for(size_t i = 0; i < *heightS; i++){
-        for(size_t j = 0; j < *widthS; j++){
-            if(counter == *widthS){
+    for(size_t i = 0; i < heightS; i++){
+        for(size_t j = 0; j < widthS; j++){
+            if(counter == widthS){
                 counter = 0;
                 char new = '\n';
                 fwrite(&new, sizeof(char), 1, out);
             }
-            if((mapData->mapMatrix + *widthS * i + j)->symbol == 0){
-                uDynamInt* bid = (mapData->mapMatrix + *widthS * i + j)->bid;
-                size_t* temp = uDynamIntToSizeT(bid);
-                char toPrint = 62 + *temp;
+            if((mapData->mapMatrix + widthS * i + j)->symbol == 0){
+                uDynamInt* bid = (mapData->mapMatrix + widthS * i + j)->bid;
+                size_t temp = uDynamIntToSizeT(bid);
+                char toPrint = 62 + temp;
                 fwrite(&toPrint, sizeof(char), 1, out);
-                free(temp);
             }
             else{
-                fwrite(&((mapData->mapMatrix + *widthS * i + j)->symbol),
+                fwrite(&((mapData->mapMatrix + widthS * i + j)->symbol),
                 sizeof(char), 1, out);
             }
             counter++;
         }
     }
     fclose(out);
-    free(heightS);
-    free(widthS);
 }
 
 uint8_t fillBuildings(mapData* mapData){
@@ -68,16 +70,16 @@ uint8_t fillBuildings(mapData* mapData){
         );
         return 0;
     }
-    size_t* heightS = uDynamIntToSizeT(mapData->height);
-    size_t* widthS = uDynamIntToSizeT(mapData->width);
+    size_t heightS = uDynamIntToSizeT(mapData->height);
+    size_t widthS = uDynamIntToSizeT(mapData->width);
     uDynamInt* bidCount = createUDynamInt(sizeof(uint8_t));
-    for(size_t i = 0; i < *heightS; i++){
-        for(size_t j = 0; j < *widthS; j++){
-            if((mapData->mapMatrix + i * (*widthS) + j)->symbol ==
+    for(size_t i = 0; i < heightS; i++){
+        for(size_t j = 0; j < widthS; j++){
+            if((mapData->mapMatrix + i * widthS + j)->symbol ==
             mapData->buildingSymbol){
                 bidCount = incrementValUDynamInt(bidCount);
                 uDynamInt* currInd = copyUDynamInt(bidCount);
-                dfs(mapData, currInd, *heightS, *widthS, j, i);
+                dfs(mapData, currInd, heightS, widthS, j, i);
             }
             else{
                 /*
@@ -89,8 +91,6 @@ uint8_t fillBuildings(mapData* mapData){
         }
     }
     mapData->bidCount = bidCount;
-    free(heightS);
-    free(widthS);
 }
 
 uint8_t initializeTextData(FILE* txtFile, mapData* map){
@@ -163,17 +163,17 @@ uint8_t initializeTextData(FILE* txtFile, mapData* map){
         " heightBytes or widthBytes of 8. Please use a smaller .txt file.\n");
         return 0;
     }
-    size_t* heightAlloc = uDynamIntToSizeT(height);
-    size_t* widthAlloc = uDynamIntToSizeT(width);
-    if(heightAlloc == NULL || widthAlloc == NULL){
+    size_t heightAlloc = uDynamIntToSizeT(height);
+    size_t widthAlloc = uDynamIntToSizeT(width);
+    if(heightAlloc == 0 || widthAlloc == 0){
         fprintf(stderr, "wmap error. Error with uDynamInt and map dimensions");
         return 0;
     }
     // TODO: manage this overflow risk from multiplying size_t's
     map->height = height;
     map->width = width;
-    map->mapMatrix = (mapCell*)malloc(sizeof(mapCell) * (*heightAlloc)
-     * (*widthAlloc));
+    map->mapMatrix = (mapCell*)malloc(sizeof(mapCell) * heightAlloc *
+    widthAlloc);
     if(map->mapMatrix == NULL){
         fprintf(stderr, "wmap error. Error allocating memory for map"
             " processing.");
@@ -194,7 +194,7 @@ uint8_t initializeTextData(FILE* txtFile, mapData* map){
 
 uint8_t validateJsonObject(json_object* obj, enum json_type desiredType, char* name){
     if(obj == NULL){
-        fprintf(stderr, "wcoder error. In cofig file: ");
+        fprintf(stderr, "wcoder error. In config file: ");
         fprintf(stderr, "%s", name);
         fprintf(stderr, " not found, or is NULL\n");
         return 0;
@@ -211,8 +211,6 @@ uint8_t validateJsonObject(json_object* obj, enum json_type desiredType, char* n
 //incomplete function
 uint8_t initializeConfigData(json_object* configObj, mapData* map){
     if(!validateJsonObject(configObj, json_type_object, "root")) return 0;
-    
-    
 
     //spawn
     json_object* spawnObj = json_object_object_get(configObj, "spawn");
@@ -257,7 +255,7 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
     //word count
     json_object* wordSizeObj = json_object_object_get(configObj, "wordSize");
     if(!validateJsonObject(wordSizeObj, json_type_object, "wordSize")) return 0;
-    
+
     json_object* baseAddressSizeObj = json_object_object_get(wordSizeObj, "baseAddressSize");
     if(!validateJsonObject(baseAddressSizeObj, json_type_int, "baseAddressSize")) return 0;
     int64_t baseAddressSizeInt64 = json_object_get_int64(baseAddressSizeObj);
@@ -335,7 +333,7 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
     }
     map->collidersBytes = collidersArr->length;
     map->colliders = malloc(collidersArr->length * sizeof(char));
-    
+
     for(size_t i = 0; i<collidersArr->length; i++){
         json_object* colliderObj = (json_object*)array_list_get_idx(collidersArr, i);
         if(!validateJsonObject(colliderObj, json_type_string, "collider")) return 0;
@@ -360,7 +358,6 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
         *(map->colliders+i) = colliderStr[0];
     }
 
-    
     //buidings
     json_object* buildingsArrObj = json_object_object_get(configObj, "buildings");
     if(!validateJsonObject(buildingsArrObj, json_type_array, "buildings array")) return 0;
@@ -407,7 +404,7 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
                     fprintf(stderr, "wcoder error. In config file: opcodeList cannot be empty.\n");
                     return 0;
                 }
-                
+
                 uDynamInt* opcodesCount = sizeTToUDynamInt(opcodeList->length);
                 (map->buildings + i)->opcodeCount = opcodesCount;
 
@@ -483,8 +480,7 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
                 json_object* sizeObj = json_object_object_get(buildingDetailsObj, "size");
                 if(!validateJsonObject(sizeObj, json_type_int, "size")) return 0;
                 int64_t size = json_object_get_int64(sizeObj);
-                
-                
+
                 if(size > subAddressMax){
                     fprintf(stderr, "wcoder error. In config file: In building ");
                     printNum(iuDynam);

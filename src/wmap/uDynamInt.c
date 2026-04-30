@@ -122,13 +122,20 @@ void printNum(uDynamInt* obj){
 // conversion for allocation purposes :(
 // actually holy memory leak potential why tf did i make it a pointer.
 // eh ill change it later.
-size_t* uDynamIntToSizeT(uDynamInt* obj){
-    if(obj == NULL) return NULL;
-    if(obj->size > sizeof(size_t)) return NULL; // gonna overflow
-    size_t* out = (size_t*)malloc(sizeof(size_t));
-    *out = 0;
+size_t uDynamIntToSizeT(uDynamInt* obj){
+    if(obj == NULL){
+        fprintf(stderr, "uDynamInt error: a null uDynamInt was recieved when"
+            " trying to convert a uDynamInt to a size_t");
+        return 0;
+    };
+    if(obj->size > sizeof(size_t)){
+        fprintf(stderr, "uDynamInt error: an overflow occured when trying to"
+            " convert a uDynamInt to a size_t");
+        return 0;
+    };
+    size_t out = 0;
     for(int16_t i = obj->size - 1; i >= 0; i--){
-        *out = (*out << 8) | obj->base[i];
+        out = (out << 8) | obj->base[i];
     }
     return out;
 }
@@ -139,8 +146,12 @@ uDynamInt* copyUDynamInt(uDynamInt* obj){
     return temp;
 }
 
-//TODO: incharge of uDynamInt should implement this.
-//I'm putting a placeholder function for now
+// linear time ahh
 uDynamInt* sizeTToUDynamInt(size_t num){
-    return createUDynamInt(sizeof(uint8_t));
+    uDynamInt* temp = (uDynamInt*)malloc(sizeof(uint8_t));
+    while(num != 0){
+        temp = incrementValUDynamInt(temp);
+        num--;
+    }
+    return temp;
 }

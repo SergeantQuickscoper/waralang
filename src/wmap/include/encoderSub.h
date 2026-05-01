@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
-#include <uDynamInt.h>
+#include <waralibs.h>
 #include <json-c/json.h>
 
 /*

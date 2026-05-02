@@ -146,12 +146,18 @@ uDynamInt* copyUDynamInt(uDynamInt* obj){
     return temp;
 }
 
-// linear time ahh
 uDynamInt* sizeTToUDynamInt(size_t num){
-    uDynamInt* temp = (uDynamInt*)malloc(sizeof(uint8_t));
-    while(num != 0){
-        temp = incrementValUDynamInt(temp);
-        num--;
+    uDynamInt* temp = malloc(sizeof(uDynamInt));
+
+    uint8_t* byteArrTemp = (uint8_t*)&num;
+    size_t startByte = sizeof(size_t)-1;
+    while(startByte > 0 && *(byteArrTemp + startByte) == 0){
+        startByte--;
     }
+
+    uint8_t* byteArr = malloc(startByte+1);
+    memcpy(byteArr, byteArrTemp, startByte+1);
+    temp->base = byteArr;
+    temp->size = startByte+1;
     return temp;
 }

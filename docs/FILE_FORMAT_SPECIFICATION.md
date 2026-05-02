@@ -30,16 +30,23 @@ Here is a brief description of the contents of the binary file, in order:
 - `bidSize` - `bidBytes` bytes - Specifies the number of bytes used to
   represent a singular building on the ASCII map.
 
-- `startX` - `widthBytes` bytes - Specifies the starting x-coordinate.
+- `spawnX` - `widthBytes` bytes - Specifies the starting x-coordinate.
 
-- `startY` - `heightBytes` bytes - Specifies the starting y-coordinate.
+- `spawnY` - `heightBytes` bytes - Specifies the starting y-coordinate.
 
-- `direction` - 1 byte - Specify the initial direction of travel. ^ > v <.
+- `spawnDirection` - 1 byte - Specify the initial direction of travel. ^ > v <.
 
 - `wordSizeBytes` - 1 byte - Specifies the amount of bytes for the wordSize.
 
 - `wordSize` - `wordSizeBytes` bytes - Specifies the wordsize for the map.
   This will have an effect on how addresses work.
+
+- `baseAddressBits` - `wordSizeBytes` bytes - Specifies the number of bits
+  that will make the base address.
+
+- `subAddressBits`- `wordSizeBytes` bytes - Specifies the number of bits
+  that will make up the sub addresss but we could get rid of this as we
+  can just subtract baseAddressBits from wordSize.
 
 - `cells` - `height` * `width` * (1 + `bidSize`) bytes - Specifies info about
   each cell in the map with each cell being 1 + `bidSize` bytes long and

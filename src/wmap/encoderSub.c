@@ -259,15 +259,15 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
     json_object* baseAddressSizeObj = json_object_object_get(wordSizeObj, "baseAddressSize");
     if(!validateJsonObject(baseAddressSizeObj, json_type_int, "baseAddressSize")) return 0;
     int64_t baseAddressSizeInt64 = json_object_get_int64(baseAddressSizeObj);
-    if(baseAddressSizeInt64<0){
+    if(baseAddressSizeInt64 < 0){
         fprintf(stderr, "wcoder error. In config file: ");
         fprintf(stderr, "baseAddressSize cannot be negative.\n");
         return 0;
     }
-    //because we are storing number of MEM buildings in size_t
-    if(baseAddressSizeInt64>63){
+    // because we are storing number of MEM buildings in size_t
+    if(baseAddressSizeInt64 > sizeof(size_t) - 1){
         fprintf(stderr, "wcoder error. In config file: ");
-        fprintf(stderr, "baseAddressSize cannot be greater than 63.\n");
+        fprintf(stderr, "baseAddressSize cannot be greater than size_t size.\n");
         return 0;
     }
     size_t baseAddressSizeSizeT = (size_t)baseAddressSizeInt64;
@@ -284,9 +284,9 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
         return 0;
     }
     //because we are storing storage size of `MEM` buildings in an int64
-    if(subAddressSizeInt64>63){
+    if(subAddressSizeInt64> sizeof(size_t) - 1){
         fprintf(stderr, "wcoder error. In config file: ");
-        fprintf(stderr, "subAddressSize cannot be greater than 63.\n");
+        fprintf(stderr, "subAddressSize cannot be greater than size_t size\n");
         return 0;
     }
     size_t subAddressSizeSizeT = (size_t)subAddressSizeInt64;
@@ -386,7 +386,6 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
     const uint8_t ALLOWEDOPCODESLENGTH = sizeof(ALLOWEDOPCODES)/sizeof(ALLOWEDOPCODES[0]);
     //TODO: verify buildingsArr->length with text data
     map->buildings = malloc(sizeof(bidMap) * buildingsArr->length);
-    
     size_t memCount = 0;
 
     //same value as i, just in uDynamInt to set bid & bidCount

@@ -10,7 +10,7 @@
 
 typedef struct TrieNode{
     void* isEnd;
-    struct TrieNode* children[26];
+    struct TrieNode* children[36];
 } TrieNode;
 
 typedef struct{
@@ -27,12 +27,12 @@ Trie* createTrie();
     isEnd of that node, and trie will not be updated.
     Otherwise, in case of successful insertion, will return NULL.
 */
-void* _insert(Trie* trie, const char* string, const void* data);
+void* insertElementTrie(Trie* trie, const char* string, const void* data);
 
 /*
     If string is found in trie, will return the data stored at that node.
     Otherwise, will return notEndPtr.
 */
-void* find(const Trie* trie, const char* string);
+void* findElementTrie(const Trie* trie, const char* string);
 
 #endif

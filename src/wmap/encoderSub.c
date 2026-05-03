@@ -208,7 +208,12 @@ uint8_t validateJsonObject(json_object* obj, enum json_type desiredType, char* n
     return 1;
 }
 
-//function incompatible with non 64-bit systems
+/*
+    The following function currently does not perform necessary checks
+    when downcasting to size_t from int_64. Therefore on systems lower
+    than 64 bit a posssibility of overflow does exist. Fixing this is a
+    TODO for now.
+*/
 uint8_t initializeConfigData(json_object* configObj, mapData* map){
     if(!validateJsonObject(configObj, json_type_object, "root")) return 0;
 
@@ -259,15 +264,15 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
     json_object* baseAddressSizeObj = json_object_object_get(wordSizeObj, "baseAddressSize");
     if(!validateJsonObject(baseAddressSizeObj, json_type_int, "baseAddressSize")) return 0;
     int64_t baseAddressSizeInt64 = json_object_get_int64(baseAddressSizeObj);
-    if(baseAddressSizeInt64<0){
+    if(baseAddressSizeInt64 < 0){
         fprintf(stderr, "wcoder error. In config file: ");
         fprintf(stderr, "baseAddressSize cannot be negative.\n");
         return 0;
     }
-    //because we are storing number of MEM buildings in size_t
-    if(baseAddressSizeInt64>63){
+    // because we are storing number of MEM buildings in size_t
+    if(baseAddressSizeInt64 > 8 * sizeof(size_t) - 1){
         fprintf(stderr, "wcoder error. In config file: ");
-        fprintf(stderr, "baseAddressSize cannot be greater than 63.\n");
+        fprintf(stderr, "baseAddressSize cannot be greater than size_t size.\n");
         return 0;
     }
     size_t baseAddressSizeSizeT = (size_t)baseAddressSizeInt64;
@@ -284,9 +289,9 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
         return 0;
     }
     //because we are storing storage size of `MEM` buildings in an int64
-    if(subAddressSizeInt64>63){
+    if(subAddressSizeInt64 > 8 * sizeof(size_t) - 1){
         fprintf(stderr, "wcoder error. In config file: ");
-        fprintf(stderr, "subAddressSize cannot be greater than 63.\n");
+        fprintf(stderr, "subAddressSize cannot be greater than size_t size\n");
         return 0;
     }
     size_t subAddressSizeSizeT = (size_t)subAddressSizeInt64;
@@ -386,7 +391,6 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
     const uint8_t ALLOWEDOPCODESLENGTH = sizeof(ALLOWEDOPCODES)/sizeof(ALLOWEDOPCODES[0]);
     //TODO: verify buildingsArr->length with text data
     map->buildings = malloc(sizeof(bidMap) * buildingsArr->length);
-    
     size_t memCount = 0;
 
     //same value as i, just in uDynamInt to set bid & bidCount
@@ -470,7 +474,6 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
                 (map->buildings+i)->baseAddress = strdup(baseAddress);
             }
             else if(!strcmp(buildingType, "MEM")){
-                memCount++;
                 if(memCount > baseAddressMax){
                     fprintf(stderr, "wcoder error. In config file: ");
                     fprintf(stderr, "number of MEM buildings exceed baseAddress wordSize capacity.");
@@ -479,6 +482,7 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
                     fprintf(stderr, "increase baseAddressSize to increase capacity.");
                     return 0;
                 }
+                memCount++;
                 json_object* baseAddressObj = json_object_object_get(buildingDetailsObj, "baseAddress");
                 if(!validateJsonObject(baseAddressObj, json_type_string, "MEM building baseAddress")) return 0;
                 const char* baseAddress = json_object_get_string(baseAddressObj);

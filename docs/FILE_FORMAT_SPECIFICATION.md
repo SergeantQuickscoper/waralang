@@ -41,17 +41,12 @@ Here is a brief description of the contents of the binary file, in order:
 - `wordSize` - `wordSizeBytes` bytes - Specifies the wordsize for the map.
   This will have an effect on how addresses work.
 
-- `buildingSymbol` - 1 byte - Specifies which ascii symbol denontes buildings
-  in the ascii map.
+- `baseAddressBits` - `wordSizeBytes` bytes - Specifies the number of bits
+  that will make the base address.
 
-- `junctionSymbol` - 1 byte - Specifies which ascii symbol denontes junctions
-  in the ascii map.
-
-- `collidersBytes` - 1 byte - Specifies how many ascii symbols denote
-  colliders.
-
-- `colliders` - `collidersBytes` bytes - A sequence of all the ascii characters
-  used to denote the colliders.
+- `subAddressBits`- `wordSizeBytes` bytes - Specifies the number of bits
+  that will make up the sub addresss but we could get rid of this as we
+  can just subtract baseAddressBits from wordSize.
 
 - `cells` - `height` * `width` * (1 + `bidSize`) bytes - Specifies info about
   each cell in the map with each cell being 1 + `bidSize` bytes long and

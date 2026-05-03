@@ -31,13 +31,13 @@ Trie* createTrie();
     Otherwise, in case of successful insertion, will return isEndPtr.
     If an invalid character is in the string, it will return (void*)-1.
 */
-void* insert(Trie* trie, const char* string, const void* data);
+void* insertElementTrie(Trie* trie, const char* string, const void* data);
 
 /*
     If string is found in trie, will return the data stored at that node.
     Otherwise, will return notEndPtr.
 */
-void* find(const Trie* trie, const char* string);
+void* findElementTrie(const Trie* trie, const char* string);
 
 // returns a pointer to the deleted string's data
 // if string not in trie, will return notEndPtr

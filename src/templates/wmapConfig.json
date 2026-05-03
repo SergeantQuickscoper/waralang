@@ -4,8 +4,8 @@
     "junctionSymbol": "+",
     "colliders":  ["|", "-", "/", "\\"],
     "wordSize": {
-        "baseAddressSize": 50,
-        "subAddressSize": 62
+        "baseAddressSize": 2,
+        "subAddressSize": 14
     },
     "spawn": {
         "x": 0,
@@ -16,25 +16,25 @@
         {
             "MEM": {
                 "baseAddress": "ISH",
-                "size": 1000000000000000000
+                "size": 20
             }
         },
         {
             "MEM": {
-                "baseAddress": "ISH",
-                "size": 1000000000000000000
+                "baseAddress": "18K",
+                "size": 100
             }
         },
         {
             "MEM": {
-                "baseAddress": "ISH",
-                "size": 1000000000000000000
+                "baseAddress": "GANDHI",
+                "size": 40
             }
         },
         {
             "MEM": {
-                "baseAddress": "ISH",
-                "size": 1000000000000000000
+                "baseAddress": "AZAD",
+                "size": 20
             }
         },
         {

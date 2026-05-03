@@ -208,7 +208,12 @@ uint8_t validateJsonObject(json_object* obj, enum json_type desiredType, char* n
     return 1;
 }
 
-//function incompatible with non 64-bit systems
+/*
+    The following function currently does not perform necessary checks
+    when downcasting to size_t from int_64. Therefore on systems lower
+    than 64 bit a posssibility of overflow does exist. Fixing this is a
+    TODO for now.
+*/
 uint8_t initializeConfigData(json_object* configObj, mapData* map){
     if(!validateJsonObject(configObj, json_type_object, "root")) return 0;
 
@@ -265,7 +270,7 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
         return 0;
     }
     // because we are storing number of MEM buildings in size_t
-    if(baseAddressSizeInt64 > sizeof(size_t) - 1){
+    if(baseAddressSizeInt64 > 8 * sizeof(size_t) - 1){
         fprintf(stderr, "wcoder error. In config file: ");
         fprintf(stderr, "baseAddressSize cannot be greater than size_t size.\n");
         return 0;
@@ -284,7 +289,7 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
         return 0;
     }
     //because we are storing storage size of `MEM` buildings in an int64
-    if(subAddressSizeInt64> sizeof(size_t) - 1){
+    if(subAddressSizeInt64 > 8 * sizeof(size_t) - 1){
         fprintf(stderr, "wcoder error. In config file: ");
         fprintf(stderr, "subAddressSize cannot be greater than size_t size\n");
         return 0;
@@ -469,7 +474,6 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
                 (map->buildings+i)->baseAddress = strdup(baseAddress);
             }
             else if(!strcmp(buildingType, "MEM")){
-                memCount++;
                 if(memCount > baseAddressMax){
                     fprintf(stderr, "wcoder error. In config file: ");
                     fprintf(stderr, "number of MEM buildings exceed baseAddress wordSize capacity.");
@@ -478,6 +482,7 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
                     fprintf(stderr, "increase baseAddressSize to increase capacity.");
                     return 0;
                 }
+                memCount++;
                 json_object* baseAddressObj = json_object_object_get(buildingDetailsObj, "baseAddress");
                 if(!validateJsonObject(baseAddressObj, json_type_string, "MEM building baseAddress")) return 0;
                 const char* baseAddress = json_object_get_string(baseAddressObj);

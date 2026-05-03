@@ -1,9 +1,14 @@
 CC = gcc
-WMAP_CC_FLAGS = -Isrc/wmap/include
+
+WARALIBS_CC_FLAGS = -Isrc/libs/include
+WARALIBS_SOURCE = $(wildcard src/libs/*.c)
+
+WMAP_CC_FLAGS = -Isrc/wmap/include $(WARALIBS_CC_FLAGS)
+WMAP_ENCODER_SOURCE = $(wildcard src/wmap/*.c) $(WARALIBS_SOURCE)
+
 JSONC_CFLAGS = $(shell pkg-config --cflags json-c)
 JSONC_LIBS = $(shell pkg-config --libs json-c)
 
-WMAP_ENCODER_SOURCE = $(wildcard src/wmap/*.c)
 
 BIN_DIR = bin
 

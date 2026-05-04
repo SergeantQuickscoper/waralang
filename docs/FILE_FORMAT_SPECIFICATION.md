@@ -24,7 +24,7 @@ Here is a brief description of the contents of the binary file, in order:
 
 - `width` - `widthBytes` bytes - Specifies the width of the ASCII map.
 
-- `bidSize` - `biddBytes` bytes - Specifies the number of bytes used to
+- `bidSize` - `bidBytes` bytes - Specifies the number of bytes used to
   represent a singular building on the ASCII map.
 
 - `spawnX` - `widthBytes` bytes - Specifies the starting x-coordinate.
@@ -39,7 +39,7 @@ Here is a brief description of the contents of the binary file, in order:
   that will make the base address.
 
 - `subAddressBits`- `wordSizeBytes` bytes - Specifies the number of bits
-  that will make up the sub addresss.
+  that will make up the sub address.
 
 - `cells` - `height` * `width` * (1 + `bidSize`) bytes - Specifies info about
   each cell in the map with each cell being 1 + `bidSize` bytes long and
@@ -98,7 +98,7 @@ work. These currently are: `traversables`, `colliders` and `junctions`. The
 ASCII characters belonging to these classes should be defined in the config
 `.json` file and the last 3 `bids` will be reserved for these based on the max
 value for the `bidSize` parameter. To be more specific the assisgnments for
-each symbol classs are:
+each symbol class are:
 - Traversables: MAX_BID
 - Colliders: MAX_BID - 1
 - Junctions: MAX_BID - 2

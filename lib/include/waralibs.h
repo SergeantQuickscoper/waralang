@@ -1,6 +1,7 @@
-// Contains all global waralang libraries
 #ifndef WARALIBS
 #define WARALIBS
+
+// Contains all global waralang libraries
 
 #include <uDynamInt.h>
 #include <trie.h>

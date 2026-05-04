@@ -8,8 +8,8 @@
         "subAddressSize": 14
     },
     "spawn": {
-        "x": 0,
-        "y": 0,
+        "x": 2,
+        "y": 2,
         "direction": ">"
     },
     "buildings": [

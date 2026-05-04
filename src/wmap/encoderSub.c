@@ -1,5 +1,5 @@
 #include <encoderSub.h>
-
+#include <math.h>
 /*
     Currently the dfs only checks the vertical and horizontal cells for the bid
     symbol to be considered under building. This should probably be upto user
@@ -81,17 +81,40 @@ uint8_t fillBuildings(mapData* mapData){
                 uDynamInt* currInd = copyUDynamInt(bidCount);
                 dfs(mapData, currInd, heightS, widthS, j, i);
             }
-            else{
-                /*
-                  TODO: here would be a good place to decide whether a symbol
-                  is a traversable, collider or junction (reserved bid
-                  implementation).
-                */
-            }
         }
     }
     mapData->bidCount = bidCount;
+
+    /*
+                Reserved bids (as per file format specification):
+                Traversables: MAX_BID
+                Colliders: MAX_BID - 1
+                Junctions: MAX_BID - 2
+    */
+    for(size_t i = 0; i < heightS; i++){
+        for(size_t j = 0; j < widthS; j++){
+            char thisSym = (mapData->mapMatrix + i * widthS + j)->symbol;
+            size_t bidMax = (1 << ((mapData->bidCount->size) * 8)) - 1;
+            if(thisSym == mapData->junctionSymbol){
+                (mapData->mapMatrix + i * widthS + j)->bid = sizeTToUDynamInt(bidMax - 2);
+            }
+            else{
+                uint8_t isColl = 0;
+                for(uint8_t k = 0; k < mapData->collidersBytes; k++){
+                    if(thisSym == mapData->colliders[k]){
+                        (mapData->mapMatrix + i * widthS + j)->bid = sizeTToUDynamInt(bidMax - 1);
+                        isColl = 1;
+                        break;
+                    }
+                }
+                if(isColl == 0){
+                    (mapData->mapMatrix + i * widthS + j)->bid = sizeTToUDynamInt(bidMax);
+                }
+            }
+        }
+    }
 }
+
 
 uint8_t initializeTextData(FILE* txtFile, mapData* map){
     uDynamInt* height = createUDynamInt(sizeof(uint8_t));
@@ -174,6 +197,8 @@ uint8_t initializeTextData(FILE* txtFile, mapData* map){
     map->width = width;
     map->mapMatrix = (mapCell*)malloc(sizeof(mapCell) * heightAlloc *
     widthAlloc);
+    map->spawnX = setSizeUDynamInt(map->spawnX, map->width->size);
+    map->spawnY = setSizeUDynamInt(map->spawnY, map->height->size);
     if(map->mapMatrix == NULL){
         fprintf(stderr, "wmap error. Error allocating memory for map"
             " processing.");
@@ -229,6 +254,11 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
     if(spawnXInt64T<0){
         fprintf(stderr, "wcoder error. In config file: spawnX cannot be negative");
     }
+
+    /*
+        spawnX and spawnY are compared to and resized to width and height,
+        in the intiialize text function.
+    */
     size_t spawnXSizeT = (size_t)spawnXInt64T;
     uDynamInt* spawnXUDynam = sizeTToUDynamInt(spawnXSizeT);
     map->spawnX = spawnXUDynam;
@@ -536,4 +566,61 @@ mapData* initializeMapData(FILE* mapTextFile, json_object* configObj){
     uint8_t mapStatus = initializeTextData(mapTextFile, map);
     if(mapStatus == 0 || configStatus == 0) return NULL;
     return map;
+}
+
+uint8_t encodeData(char* outPath, mapData* map){
+    if(strlen(outPath) == 0){
+        return 0;
+    }
+    FILE* outFile;
+    char* finOut = outPath;
+    uint8_t allocFlag = 0;
+    if(outPath[strlen(outPath) - 1] == '/'){
+        char* defaultName = "out.wmap";
+        finOut = (char*)malloc(sizeof(char) * (strlen(defaultName) + strlen(outPath) + 1));
+        strcpy(finOut, outPath);
+        strcat(finOut, defaultName);
+        allocFlag = 1;
+    }
+    outFile = fopen(finOut, "wb");
+
+    fwrite(&map->height->size, sizeof(map->height->size), 1, outFile);
+    fwrite(&map->width->size, sizeof(map->width->size), 1, outFile);
+
+    size_t bidCount = uDynamIntToSizeT(map->bidCount);
+    int bits = 0;
+    size_t temp = bidCount;
+    while(temp != 0){
+        bits++;
+        temp = temp >> 1;
+    }
+    if(bits == 0) bits = 1;
+    uint8_t bidBytes = (bits + 7)/8;
+    fwrite(map->height->base, sizeof(uint8_t), map->height->size, outFile);
+    fwrite(map->width->base, sizeof(uint8_t), map->width->size, outFile);
+    fwrite(&bidBytes, sizeof(uint8_t), 1, outFile);
+    fwrite(map->spawnX->base, sizeof(uint8_t), map->spawnX->size, outFile);
+    fwrite(map->spawnY->base, sizeof(uint8_t), map->spawnY->size, outFile);
+    fwrite(&map->spawnDirection, sizeof(char), 1, outFile);
+    uint8_t max = (map->baseAddressSize->size > map->subAddressSize->size) ?
+    map->baseAddressSize->size : map->subAddressSize->size;
+    fwrite(&max, sizeof(uint8_t), 1, outFile);
+    fwrite(map->baseAddressSize->base, sizeof(uint8_t), max, outFile);
+    fwrite(map->subAddressSize->base, sizeof(uint8_t), max, outFile);
+
+    size_t heightS = uDynamIntToSizeT(map->height);
+    size_t widthS = uDynamIntToSizeT(map->width);
+    for(size_t i = 0; i < heightS; i++){
+        for(size_t j = 0; j < widthS; j++){
+                fwrite(&((map->mapMatrix + widthS * i + j)->symbol),
+                sizeof(char), 1, outFile);
+                (map->mapMatrix + widthS * i + j)->bid = setSizeUDynamInt(
+                    (map->mapMatrix + widthS * i + j)->bid, bidBytes);
+                fwrite(&((map->mapMatrix + widthS * i + j)->bid),
+                sizeof(uint8_t), bidBytes, outFile);
+        }
+    }
+    fclose(outFile);
+    if(allocFlag == 1) free(finOut);
+    return 1;
 }

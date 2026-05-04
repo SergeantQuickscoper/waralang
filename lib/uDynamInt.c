@@ -32,6 +32,26 @@ uDynamInt* incrementSizeUDynamInt(uDynamInt* obj){
     return temp;
 }
 
+uDynamInt* setSizeUDynamInt(uDynamInt* obj, uint8_t newSize){
+    if(obj->size >= 255 || newSize >= 255){
+        fprintf(stderr, "DynamicIntOverflow Error! Cannot resize.\n");
+        return NULL;
+    }
+    if(newSize < obj->size){
+        fprintf(stderr, "DynamicInt Error: newSize cannot be lower than existing size!\n");
+        return NULL;
+    }
+    uDynamInt* temp = createUDynamInt(newSize);
+    if(temp == NULL){
+        return NULL;
+    }
+    memcpy(temp->base, obj->base, sizeof(uint8_t) * obj->size);
+    free(obj->base);
+    free(obj);
+    obj = temp;
+    return temp;
+}
+
 uDynamInt* incrementValUDynamInt(uDynamInt* obj){
     if(obj == NULL){
         fprintf(stderr, "Error! Cannot increment a null uDynamInt.");

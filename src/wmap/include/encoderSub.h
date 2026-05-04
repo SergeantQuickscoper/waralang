@@ -60,6 +60,9 @@ typedef struct {
 */
 mapData* initializeMapData(FILE* mapTextFile, json_object* configObj);
 
-uint8_t calculateBidByteSize();
+/*
+    Writes a wmap file to outPath. Returns 1 if successful else 0.
+*/
+uint8_t encodeData(char* outPath, mapData* map);
 
 #endif

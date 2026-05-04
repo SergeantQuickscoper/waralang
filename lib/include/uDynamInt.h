@@ -17,7 +17,11 @@ typedef struct {
 
 uDynamInt* createUDynamInt(uint8_t byteSize);
 
+// still used internally but worth deprecating now that
+// we have the setSizeUDynamInt method.
 uDynamInt* incrementSizeUDynamInt(uDynamInt* obj);
+
+uDynamInt* setSizeUDynamInt(uDynamInt* obj, uint8_t size);
 
 uDynamInt* incrementValUDynamInt(uDynamInt* obj);
 

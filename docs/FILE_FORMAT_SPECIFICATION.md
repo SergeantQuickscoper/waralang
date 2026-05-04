@@ -20,14 +20,11 @@ Here is a brief description of the contents of the binary file, in order:
 - `widthBytes` - 1 byte - Specifies byte length of the width of the ASCII map
   in pixels.
 
-- `bidBytes` - 1 byte - Specifies the byte length of the bid size of the ASCII
-  map.
-
 - `height` - `heightBytes` bytes - Specifies the height of the ASCII map.
 
 - `width` - `widthBytes` bytes - Specifies the width of the ASCII map.
 
-- `bidSize` - `bidBytes` bytes - Specifies the number of bytes used to
+- `bidSize` - `biddBytes` bytes - Specifies the number of bytes used to
   represent a singular building on the ASCII map.
 
 - `spawnX` - `widthBytes` bytes - Specifies the starting x-coordinate.
@@ -38,15 +35,11 @@ Here is a brief description of the contents of the binary file, in order:
 
 - `wordSizeBytes` - 1 byte - Specifies the amount of bytes for the wordSize.
 
-- `wordSize` - `wordSizeBytes` bytes - Specifies the wordsize for the map.
-  This will have an effect on how addresses work.
-
 - `baseAddressBits` - `wordSizeBytes` bytes - Specifies the number of bits
   that will make the base address.
 
 - `subAddressBits`- `wordSizeBytes` bytes - Specifies the number of bits
-  that will make up the sub addresss but we could get rid of this as we
-  can just subtract baseAddressBits from wordSize.
+  that will make up the sub addresss.
 
 - `cells` - `height` * `width` * (1 + `bidSize`) bytes - Specifies info about
   each cell in the map with each cell being 1 + `bidSize` bytes long and
@@ -101,8 +94,11 @@ Here is a brief description of the contents of the binary file, in order:
 
 Currently there are 3 different classes of symbols in `waralang` that aren't
 directly functional but are important for the interpreter to know for it to
-work. These currently are: `traverables`, `colliders` and `junctions`. The
+work. These currently are: `traversables`, `colliders` and `junctions`. The
 ASCII characters belonging to these classes should be defined in the config
 `.json` file and the last 3 `bids` will be reserved for these based on the max
-value for the `bidSize` parameter.
-
+value for the `bidSize` parameter. To be more specific the assisgnments for
+each symbol classs are:
+- Traversables: MAX_BID
+- Colliders: MAX_BID - 1
+- Junctions: MAX_BID - 2

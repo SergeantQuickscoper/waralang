@@ -106,13 +106,13 @@
                 "REG":{
                     "type":"object",
                     "properties": {
-                        "baseAddress":{
+                        "regName":{
                             "type":"string",
-                            "description": "Base address for building.",
+                            "description": "Name of register for building.",
                             "minLength": 1
                         }
                     },
-                    "required": ["baseAddress"],
+                    "required": ["regName"],
                     "description": "Register."
                 }
             },

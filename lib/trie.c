@@ -17,6 +17,7 @@ Trie* createTrie(){
     Trie* trie = malloc(sizeof(Trie));
     trie->notEndPtr = malloc(sizeof(uint8_t));
     trie->root = initTrieNode(trie->notEndPtr);
+    return trie;
 };
 
 // finds index of character in children array
@@ -53,7 +54,7 @@ void* insertElementTrie(Trie* trie, const char* string, const void* data){
             return (void*)-1;
         }
         if(curNode->children[id] == NULL){
-            curNode->children[i] = initTrieNode(trie->notEndPtr);
+            curNode->children[id] = initTrieNode(trie->notEndPtr);
         }
         curNode = curNode->children[id];
     }

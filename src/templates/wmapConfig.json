@@ -61,7 +61,7 @@
         },
         {
             "REG": {
-                "baseAddress": "COUNTRYOVEN"
+                "regName": "COUNTRYOVEN"
             }
         },
         {

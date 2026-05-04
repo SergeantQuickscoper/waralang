@@ -439,6 +439,8 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
     size_t memCount = 0;
     size_t i;
 
+    Trie* memRegNamesTrie = createTrie();
+
     for(i = 0; i<buildingsArr->length; i++){
         json_object* buildingObj = (json_object*)array_list_get_idx(buildingsArr, i);
         //TODO: add building number to title for easier debugging
@@ -497,20 +499,33 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
             }
             else if(!strcmp(buildingType, "REG")){
                 map->buildings[i].buildingType = REGTYPE;
-                json_object* baseAddressObj = json_object_object_get(buildingDetailsObj, "baseAddress");
-                if(!validateJsonObject(baseAddressObj, json_type_string, "MEM building baseAddress")) return 0;
-                const char* baseAddress = json_object_get_string(baseAddressObj);
-                size_t baseAddressLength = json_object_get_string_len(baseAddressObj);
+                json_object* regNameObj = json_object_object_get(buildingDetailsObj, "regName");
+                if(!validateJsonObject(regNameObj, json_type_string, "REG building regName")) return 0;
+                const char* regName = json_object_get_string(regNameObj);
+                size_t regNameLength = json_object_get_string_len(regNameObj);
 
-                if(baseAddressLength==0){
+                if(regNameLength==0){
                     fprintf(stderr, "wcoder error. In config file: In building ");
-                    fprintf(stderr, "%zu\nbaseAddress cannot be empty.\n", i);
+                    fprintf(stderr, "%zu\nregName cannot be empty.\n", i);
                     return 0;
                 }
 
-                map->buildings[i].buildingData.reg.regNameBytes = baseAddressLength;
+                void* insertResult = insertElementTrie(memRegNamesTrie, regName, NULL);
+                if(insertResult == (void*)-1){
+                    fprintf(stderr, "wcoder error. In config file: In building ");
+                    fprintf(stderr, "%zu\n", i);
+                    return 0;
+                }
+                if(insertResult != memRegNamesTrie->notEndPtr){
+                    fprintf(stderr, "wcoder error. In config file: In building ");
+                    fprintf(stderr, "%zu\n", i);
+                    fprintf(stderr, "all MEM regNamees and REG regNames should be exclusive.\n");
+                    return 0;
+                }
 
-                map->buildings[i].buildingData.reg.regName = strdup(baseAddress);
+                map->buildings[i].buildingData.reg.regNameBytes = regNameLength;
+
+                map->buildings[i].buildingData.reg.regName = strdup(regName);
             }
             else if(!strcmp(buildingType, "MEM")){
                 map->buildings[i].buildingType = MEMTYPE;
@@ -531,6 +546,18 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
                 if(baseAddressLength==0){
                     fprintf(stderr, "wcoder error. In config file: In building ");
                     fprintf(stderr, "%zu\nbaseAddress cannot be empty.\n", i);
+                    return 0;
+                }
+                void* insertResult = insertElementTrie(memRegNamesTrie, baseAddress, NULL);
+                if(insertResult == (void*)-1){
+                    fprintf(stderr, "wcoder error. In config file: In building ");
+                    fprintf(stderr, "%zu\n", i);
+                    return 0;
+                }
+                if(insertResult != memRegNamesTrie->notEndPtr){
+                    fprintf(stderr, "wcoder error. In config file: In building ");
+                    fprintf(stderr, "%zu\n", i);
+                    fprintf(stderr, "all MEM baseAddresses and REG regNames should be exclusive.\n");
                     return 0;
                 }
 

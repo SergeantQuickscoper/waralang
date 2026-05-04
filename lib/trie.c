@@ -102,7 +102,7 @@ void* deleteRecursive(TrieNode* node, const char* string, size_t i, void* notEnd
     }
 
     if(string[i]=='\0'){
-        *res = node->isEnd;
+        *res = (void*)node->isEnd;
         node->isEnd = notEndPtr;
         if(isEmpty(node, notEndPtr)){
             free(node);

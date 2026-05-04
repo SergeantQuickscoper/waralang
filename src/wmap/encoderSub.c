@@ -1,5 +1,22 @@
 #include <encoderSub.h>
 #include <math.h>
+
+// There should be max 256 elements in this array - unvalidated
+// There must be "MEM" and "REG" in this array - unvalidated
+const char* ALLOWEDOPCODES[] = {
+                        "NOP",
+                        "MEM",
+                        "REG",
+                        "ADD",
+                        "MULT",
+                        "LOAD",
+                        "STORE",
+                        "COMP",
+                        "STDIN",
+                        "STDOUT_ASCII",
+                        "STDOUT_INT"
+};
+
 /*
     Currently the dfs only checks the vertical and horizontal cells for the bid
     symbol to be considered under building. This should probably be upto user
@@ -84,8 +101,12 @@ uint8_t fillBuildings(mapData* mapData){
         }
     }
     if(isEqual(mapData->bidCount, bidCount)==0){
-        fprintf(stderr, "wmap encoder error! Number of buildings in ascii map");
-        fprintf(stderr, " do not match number of buildings in config.\n");
+        fprintf(stderr, "wmap encoder error! Number of buildings in ascii");
+        fprintf(stderr, " map: ");
+        printNum(bidCount);
+        fprintf(stderr, ", do not match number of buildings in config: ");
+        printNum(mapData->bidCount);
+        fprintf(stderr, "\n");
         return 0;
     }
 
@@ -412,19 +433,6 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
     if(!validateJsonObject(buildingsArrObj, json_type_array, "buildings array")) return 0;
     array_list* buildingsArr = json_object_get_array(buildingsArrObj);
 
-    const char* ALLOWEDOPCODES[] = {
-                            "NOP",
-                            "MEM",
-                            "REG",
-                            "ADD",
-                            "MULT",
-                            "LOAD",
-                            "STORE",
-                            "COMP",
-                            "STDIN",
-                            "STDOUT_ASCII",
-                            "STDOUT_INT"
-    };
     const uint8_t ALLOWEDOPCODESLENGTH = sizeof(ALLOWEDOPCODES)/sizeof(ALLOWEDOPCODES[0]);
     
     map->buildings = malloc(sizeof(bidMap) * buildingsArr->length);
@@ -618,6 +626,55 @@ uint8_t encodeData(char* outPath, mapData* map){
                 sizeof(uint8_t), bidBytes, outFile);
         }
     }
+
+    const size_t ALLOWEDOPCODESLENGTH = sizeof(ALLOWEDOPCODES)/sizeof(ALLOWEDOPCODES[0]);
+    size_t memOpcode = 0, regOpcode = 0;
+    for(size_t i = 0; i<ALLOWEDOPCODESLENGTH; i++){
+        if(strcmp(ALLOWEDOPCODES[i], "REG") == 0){
+            regOpcode = i;
+        }
+        else if(strcmp(ALLOWEDOPCODES[i], "MEM") == 0){
+            memOpcode = i;
+        }
+    }
+
+    for(size_t i = 0; i<bidCount; i++){
+        if(map->buildings[i].buildingType == FUNCTYPE){
+            fputc(map->buildings[i].buildingData.func.opcodeCount->size,
+                outFile);
+            fwrite(map->buildings[i].buildingData.func.opcodeCount->base,
+                sizeof(uint8_t),
+                map->buildings[i].buildingData.func.opcodeCount->size,
+                outFile);
+            fwrite(map->buildings[i].buildingData.func.opcodes,
+                sizeof(uint8_t),
+            uDynamIntToSizeT(map->buildings[i].buildingData.func.opcodeCount),
+                outFile);
+        }
+        else if(map->buildings[i].buildingType == REGTYPE){
+            fputc(1, outFile);
+            fputc(1, outFile);
+            fputc(regOpcode, outFile);
+            fputc(map->buildings[i].buildingData.reg.regNameBytes, outFile);
+            fwrite(map->buildings[i].buildingData.reg.regName, sizeof(char),
+                map->buildings[i].buildingData.reg.regNameBytes, outFile);
+        }
+        else if(map->buildings[i].buildingType == MEMTYPE){
+            fputc(1, outFile);
+            fputc(1, outFile);
+            fputc(memOpcode, outFile);
+            fputc(map->buildings[i].buildingData.mem.baseAddressBytes,
+                outFile);
+            fwrite(map->buildings[i].buildingData.mem.baseAddress,
+                sizeof(char),
+                map->buildings[i].buildingData.mem.baseAddressBytes, outFile);
+            fputc(map->buildings[i].buildingData.mem.memSize->size, outFile);
+            fwrite(map->buildings[i].buildingData.mem.memSize->base,
+                sizeof(uint8_t),
+                map->buildings[i].buildingData.mem.memSize->size, outFile);
+        }
+    }
+
     fclose(outFile);
     if(allocFlag == 1) free(finOut);
     return 1;

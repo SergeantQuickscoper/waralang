@@ -63,6 +63,359 @@
             "REG": {
                 "baseAddress": "COUNTRYOVEN"
             }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD",
+                    "MULT"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD",
+                    "MULT"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD",
+                    "MULT"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD",
+                    "MULT"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD",
+                    "MULT"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD",
+                    "MULT"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD",
+                    "MULT"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD",
+                    "MULT"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD",
+                    "MULT"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD",
+                    "MULT"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD",
+                    "MULT"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD",
+                    "MULT"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD",
+                    "MULT"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD",
+                    "MULT"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD",
+                    "MULT"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD",
+                    "MULT"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD"
+                ]
+            }
         }
+                
     ]
 }

@@ -17,12 +17,36 @@ typedef struct {
 } mapCell;
 
 typedef struct{
-    uDynamInt* bid;
     uDynamInt* opcodeCount;
     uint8_t* opcodes;
+} FUNC;
+
+typedef struct{
+    uint8_t regNameBytes;
+    char* regName;
+} REG;
+
+typedef struct{
     uint8_t baseAddressBytes;
     char* baseAddress;
     uDynamInt* memSize;
+} MEM;
+
+union building{
+    FUNC func;
+    REG reg;
+    MEM mem;
+};
+
+enum BuildingType{
+    FUNCTYPE,
+    REGTYPE,
+    MEMTYPE
+};
+
+typedef struct{
+    enum BuildingType buildingType;
+    union building buildingData;
 } bidMap;
 
 

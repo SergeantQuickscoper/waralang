@@ -83,7 +83,11 @@ uint8_t fillBuildings(mapData* mapData){
             }
         }
     }
-    mapData->bidCount = bidCount;
+    if(isEqual(mapData->bidCount, bidCount)==0){
+        fprintf(stderr, "wmap encoder error! Number of buildings in ascii map");
+        fprintf(stderr, " do not match number of buildings in config.\n");
+        return 0;
+    }
 
     /*
                 Reserved bids (as per file format specification):
@@ -212,7 +216,10 @@ uint8_t initializeTextData(FILE* txtFile, mapData* map){
         mapCell* currCell = map->mapMatrix + ptr++;
         currCell->symbol = c;
     }
-    fillBuildings(map);
+    uint8_t fillStatus = fillBuildings(map);
+    if(fillStatus == 0){
+        return 0;
+    }
     return 1;
 }
 
@@ -359,7 +366,7 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
 
 
     json_object* collidersObj = json_object_object_get(configObj, "colliders");
-    if(!validateJsonObject(collidersObj, json_type_array, "colliders"));
+    if(!validateJsonObject(collidersObj, json_type_array, "colliders")) return 0;
     array_list* collidersArr = json_object_get_array(collidersObj);
     if(collidersArr->length == 0){
         fprintf(stderr, "wcoder error. In config file: ");
@@ -419,25 +426,20 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
                             "STDOUT_INT"
     };
     const uint8_t ALLOWEDOPCODESLENGTH = sizeof(ALLOWEDOPCODES)/sizeof(ALLOWEDOPCODES[0]);
-    //TODO: verify buildingsArr->length with text data
+    
     map->buildings = malloc(sizeof(bidMap) * buildingsArr->length);
     size_t memCount = 0;
+    size_t i;
 
-    //same value as i, just in uDynamInt to set bid & bidCount
-    uDynamInt* iuDynam = createUDynamInt(sizeof(uint8_t));
-
-    for(size_t i = 0; i<buildingsArr->length; i++){
+    for(i = 0; i<buildingsArr->length; i++){
         json_object* buildingObj = (json_object*)array_list_get_idx(buildingsArr, i);
         //TODO: add building number to title for easier debugging
         if(!validateJsonObject(buildingObj, json_type_object, "building")) return 0;
 
         //this foreach is there just to get the only 1 element
         json_object_object_foreach(buildingObj, buildingType, buildingDetailsObj){
+            map->buildings[i].buildingType = FUNCTYPE;
             if(!validateJsonObject(buildingDetailsObj, json_type_object, "building details")) return 0;
-
-            //copy iuDynam to bid
-            (map->buildings + i)->bid = createUDynamInt(iuDynam->size);
-            memcpy((map->buildings + i)->bid->base, iuDynam->base, sizeof(uint8_t) * iuDynam->size);
 
             if(!strcmp(buildingType, "FUNC")){
                 json_object* opcodeListObj = json_object_object_get(buildingDetailsObj, "opcodeList");
@@ -449,9 +451,9 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
                 }
 
                 uDynamInt* opcodesCount = sizeTToUDynamInt(opcodeList->length);
-                (map->buildings + i)->opcodeCount = opcodesCount;
+                map->buildings[i].buildingData.func.opcodeCount = opcodesCount;
 
-                (map->buildings + i)->opcodes = malloc( opcodeList->length * sizeof(uint8_t) );
+                map->buildings[i].buildingData.func.opcodes = malloc( opcodeList->length * sizeof(uint8_t) );
 
                 for(size_t j = 0; j<opcodeList->length; j++){
                     //as UINT8_MAX is a reserved opcode
@@ -471,22 +473,22 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
                     }
                     if(!opcodeMatched){
                         fprintf(stderr, "wcoder error. In config file: In building ");
-                        printNum(iuDynam);
-                        fprintf(stderr, "\n undefined opcode used: ");
+                        fprintf(stderr, "%zu\n undefined opcode used: ", i);
                         fprintf(stderr, "%s.\n", opcodestr);
                         return 0;
                     }
                     if(opcode == 1 || opcode == 2){
                         fprintf(stderr, "wcoder error. In config file: In building ");
-                        printNum(iuDynam);
+                        fprintf(stderr, "%zu", i);
                         fprintf(stderr, "\n%s", opcodestr);
                         fprintf(stderr, " cannot be used in opcodeList.\n");
                         return 0;
                     }
-                    (map->buildings + i)->opcodes[j] = opcode;
+                    map->buildings[i].buildingData.func.opcodes[j] = opcode;
                 }
             }
             else if(!strcmp(buildingType, "REG")){
+                map->buildings[i].buildingType = REGTYPE;
                 json_object* baseAddressObj = json_object_object_get(buildingDetailsObj, "baseAddress");
                 if(!validateJsonObject(baseAddressObj, json_type_string, "MEM building baseAddress")) return 0;
                 const char* baseAddress = json_object_get_string(baseAddressObj);
@@ -494,16 +496,16 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
 
                 if(baseAddressLength==0){
                     fprintf(stderr, "wcoder error. In config file: In building ");
-                    printNum(iuDynam);
-                    fprintf(stderr, "\nbaseAddress cannot be empty.\n");
+                    fprintf(stderr, "%zu\nbaseAddress cannot be empty.\n", i);
                     return 0;
                 }
 
-                (map->buildings+i)->baseAddressBytes = baseAddressLength;
+                map->buildings[i].buildingData.reg.regNameBytes = baseAddressLength;
 
-                (map->buildings+i)->baseAddress = strdup(baseAddress);
+                map->buildings[i].buildingData.reg.regName = strdup(baseAddress);
             }
             else if(!strcmp(buildingType, "MEM")){
+                map->buildings[i].buildingType = MEMTYPE;
                 if(memCount > baseAddressMax){
                     fprintf(stderr, "wcoder error. In config file: ");
                     fprintf(stderr, "number of MEM buildings exceed baseAddress wordSize capacity.");
@@ -520,14 +522,13 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
 
                 if(baseAddressLength==0){
                     fprintf(stderr, "wcoder error. In config file: In building ");
-                    printNum(iuDynam);
-                    fprintf(stderr, "\nbaseAddress cannot be empty.\n");
+                    fprintf(stderr, "%zu\nbaseAddress cannot be empty.\n", i);
                     return 0;
                 }
 
-                (map->buildings+i)->baseAddressBytes = baseAddressLength;
+                map->buildings[i].buildingData.mem.baseAddressBytes = baseAddressLength;
 
-                (map->buildings+i)->baseAddress = strdup(baseAddress);
+                map->buildings[i].buildingData.mem.baseAddress = strdup(baseAddress);
 
                 json_object* sizeObj = json_object_object_get(buildingDetailsObj, "size");
                 if(!validateJsonObject(sizeObj, json_type_int, "size")) return 0;
@@ -535,27 +536,24 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
 
                 if(size > subAddressMax){
                     fprintf(stderr, "wcoder error. In config file: In building ");
-                    printNum(iuDynam);
-                    fprintf(stderr, "\nMEM size too big. Max is: ");
+                    fprintf(stderr, "%zu\nMEM size too big. Max is: ", i);
                     fprintf(stderr, "%zu.\n", subAddressMax);
                     fprintf(stderr, "increase subAddressSize to increase capacity.\n");
                     return 0;
                 }
                 if(size<0){
                     fprintf(stderr, "wcoder error. In config file: In building ");
-                    printNum(iuDynam);
-                    fprintf(stderr, "\nMEM size cannot be negative.\n");
+                    fprintf(stderr, "%zu\nMEM size cannot be negative.\n", i);
                     return 0;
                 }
 
                 uDynamInt* sizeuDynam = sizeTToUDynamInt(size);
-                (map->buildings+i)->memSize = sizeuDynam;
+                map->buildings[i].buildingData.mem.memSize = sizeuDynam;
             }
             break;
         }
-        iuDynam = incrementValUDynamInt(iuDynam);
     }
-    map->bidCount = iuDynam;
+    map->bidCount = sizeTToUDynamInt(i);
     json_object_put(configObj);
     return 1;
 }

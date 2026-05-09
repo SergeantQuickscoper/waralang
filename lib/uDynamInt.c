@@ -140,8 +140,6 @@ void printNum(uDynamInt* obj){
 }
 
 // conversion for allocation purposes :(
-// actually holy memory leak potential why tf did i make it a pointer.
-// eh ill change it later.
 size_t uDynamIntToSizeT(uDynamInt* obj){
     if(obj == NULL){
         fprintf(stderr, "uDynamInt error: a null uDynamInt was recieved when"

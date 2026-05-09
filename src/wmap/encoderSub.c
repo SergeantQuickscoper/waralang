@@ -264,7 +264,7 @@ uint8_t validateJsonObject(json_object* obj, enum json_type desiredType, char* n
 /*
     The following function currently does not perform necessary checks
     when downcasting to size_t from int_64. Therefore on systems lower
-    than 64 bit a posssibility of overflow does exist. Fixing this is a
+    than 64 bit a possibility of overflow does exist. Fixing this is a
     TODO for now.
 */
 uint8_t initializeConfigData(json_object* configObj, mapData* map){

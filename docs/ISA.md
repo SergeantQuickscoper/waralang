@@ -21,7 +21,7 @@ list of opcodes that are/will be supported by the interpreter:
 - STDOUT_INT - 00001011 - Outputs a word as a decimal integer.
 - STDOUT_BIN - 00001111 - Outputs a word in binary.
 - SPAWN_AGENT - 0001000 - Spawn an agent with an `agent-id`, with an optional
-`life cycle address`
+`life cycle address`, as well as agent parameters.
 
 **Note** - As the number of opcodes increase, it would probably be more
 beneficial to merge STDOUTs into one building and have an outmode parameter

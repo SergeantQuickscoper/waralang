@@ -3,7 +3,7 @@
 
 void printEncoderErrorUsage(char* appName, char* argv0){
     printf("%s error! Incorrect usage!\n", appName);
-    printf("Usage: %s <.txt> <.json>\n", argv0);
+    printf("Usage: %s <.txt> <.json> [<path to output location>]\n", argv0);
 }
 
 void printTextFileError(char* appName, char* argv1){

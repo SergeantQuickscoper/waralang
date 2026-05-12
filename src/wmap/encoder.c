@@ -16,7 +16,7 @@ int main(int argc, char** argv){
     if(argc == 4 && strcmp(argv[3] + strlen(argv[3]) - 5, ".wmap") != 0){
         printEncoderErrorUsage(appName, argv[0]);
         fprintf(stderr, "Please mention a valid path to save the .wmap output"
-        " including a <filename>.wmap!");
+        " including a <filename>.wmap!\n");
         return 1;
     }
 

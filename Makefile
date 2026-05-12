@@ -27,7 +27,7 @@ runwcoder: wcoder
 	./bin/wcoder ./src/templates/nitwMap.txt ./src/templates/wmapConfig.json
 
 runwinterp: winterp
-	./bin/winterp source.wl
+	./bin/winterp ./src/templates/basicSource.wl
 
 clean:
 	rm -rf ./bin

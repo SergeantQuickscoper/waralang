@@ -8,8 +8,15 @@
 int main(int argc, char** argv){
     char* appName = "wcoder";
 
-    if(argc != 3){
+    if(argc != 3 || argc != 4){
         printEncoderErrorUsage(appName, argv[0]);
+        return 1;
+    }
+
+    if(argc == 4 && strcmp(argv[3] + strlen(argv[3]) - 5, ".wmap") != 0){
+        printEncoderErrorUsage(appName, argv[0]);
+        fprintf(stderr, "Please mention a valid path to save the .wmap output"
+        " including a <filename>.wmap!\n");
         return 1;
     }
 

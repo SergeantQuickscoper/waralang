@@ -120,7 +120,7 @@ typedef struct {
 typedef struct {
     agentInst* base;
     uDynamInt* size; // cuz why NOT
-} agentArray;
+} agentsTable;
 
 ```
 - `buildings` - We would need to store a bid to `building` map, and then
@@ -159,6 +159,28 @@ typedef struct {
     enum buildingType type;
     union buildingPtr building;
 } bidMap;
+
+
+typedef struct {
+    bidMap* bidMaps;
+    uDynamInt* buildingCount;
+} bidMapTable;
+
+
+```
+
+Finally for ease of just passing in one parent object to whatever functions
+modify the runtime state let the following struct as a container for the
+current runtime:
+
+```
+
+typedef struct {
+    mapData* map;
+    agentTable* aliveAgentsTable;
+    bidMapTable* buildingsTable;
+} runtimeState;
+
 
 ```
 

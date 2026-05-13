@@ -210,20 +210,24 @@ enum memoryType{
     REGTYPE
 }
 
-union memoryBuilding{
+union storageBuilding{
     mem* memoryBuilding,
     reg* registerBuilding
-}
+};
+
+enum storageBuildingType{
+    REGTYPE,
+    MEMTYPE
+};
 
 typedef struct{
-    char* baseAddresss;
-    union memoryBuilding logicalObj;
-} addressDecodeEntry;
+    enum storageBuildingType type;
+    union storageBuilding data;
+} storageBuildingFlagged;
 
-typedef struct{
-    addressDecodeEntry* arr;
-    uDynamicInt* size;
-} addressDecodeTable;
+// Common trie from `trie.h` to store and search REG and MEM baseAddresses.
+// TrieNode.data will point to storageBuildingFlagged.
+Trie* storageBuildingTrie;
 
 typedef struct {
     char* agentID;

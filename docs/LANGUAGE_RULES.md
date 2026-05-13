@@ -1,103 +1,144 @@
 # `waralang` Language Rules
 
-This document outlines the basic rules of a `waralang` source program.
+This document outlines the basic rules of a `waralang` source program stored in a `.wl` file.
 
 ## Parts of a `waralang` program
 
 The source file would be divided into 2 parts namely:
 
-- `wmap` specification section
+- Specification section
 - `agents` code section
 
-For example:
-```
-use <path-to-wmap file>
-tickrate 60
+## Specification section
 
-!main:
->^^countryoven##
-/* Spawns a country oven agent with no `life cycle address` assuming the actor
-ended up at the SPAWN_AGENT building*/
+### `.wmap` file location
 
-!countryoven:
->^<v8#10#18K001#
-/* This is a comment (enclosed by /* */) ! F.Y.I. 18K001 is an address.
-If the actor ended up at the ADD building then this would add 8 and 10
-and store the result at address 18K001$ */
+Specified with the keyword `use`.
 
-!otherdefinitions:
+- Must appear at the top of the file.
+
+- Is required in every `.wl` file.
 
 ```
+use <path to .wmap file>
+```
 
-- `use` - The keyword used to specify which `.wmap` file to use. Essential for
-every `waralang` program.
+### `tickrate` specification
 
-- `tickrate` - The keyword used to specify the ticks per minute the interpreter
-will run the source program at.
+Specified using keyword `tickrate` in ticks per second
+that the source program will run at.
 
+- Is required in every `.wl` file.
 
-- `>`, `<`, `^` and `v` - These symbols are used to change direction of an
+```
+tickrate 20
+```
+
+## `agents` code section
+
+A main agent is required in evry `.wl` file.
+When the program is run, an instance of the main agent will spawn automatically.
+
+### Agents
+
+`agent` names and storage building names can only contain alphanumeric characters and `_`.
+
+Declared with:
+```
+!< agent name >([Parameter 1], [Parameter 2], ...):
+```
+
+### Agent code substitution
+
+Call an agent using this format:
+
+```
+{ <agent name> ([Parameter 1], [Parameter 2], ...) }
+```
+
+This code will substitute itself with the code in agent `<agent name>`.
+
+### Using agent parameters
+
+Agent parameters can be used by enclosing them in `{}`
+
+```
+{<Parameter name>}
+```
+
+This code will behave the same as if the value of the parameter was in the source code.
+
+### Storage buildings
+
+Both MEM and REG addresses must be enclosed in `[]`
+
+`->` is used as the seperator between baseAddress and subAddress of MEM.
+
+REG:
+```
+[ <REG name> ]
+```
+
+MEM:
+```
+[ <MEM name (baseAddress)> -> <subAddress> ]
+```
+
+### Comments
+
+`/* */` are used to enclose comments (preprocessed and removed before
+interpreting)
+
+```
+/* This is
+a comment. */
+```
+
+### Directions
+
+`>`, `<`, `^` and `v` - These symbols are used to change direction of an
 `agent`. The symbols act as a sequence of steps which will be followed during
 the course of the `agent`'s life. A 'step' is 'taken' when the agent reaches a
 junction (or a building with parameters, but the symbols required must
 correspond to the parameter type, and `>`, `<`, `^`, `v` are invalid for
 parameters and are only for junctions).
 
-- `!` - Used to prefix a new `agent` defintition.
-
-- `:` - Used to end the `agent` id and start definition of it's steps.
-
-- `#` - Used a terminator for a building parameter.
-
-- `/* */` - Used to enclose comments (preprocessed and removed before
-interpreting)
-
-Execution happens in 'ticks' and we intend this to be a parameter you can set
-before you run (or potentially in the initial section of the source), and also
-could be changed at runtime for unique effects.
-
 Note: `agents` are synchronized by age priority, i.e when they were spawned,
 and the `main agent` has the highest priority.
 
-Note: It is still not decided whether to stick exclusively to runtime
-exceptions or to include exceptions like the one above during lexical
-or syntax analysis.
-
-## Conditional Movement and Building Parameters
+### Conditional Statements
 
 Within an `agent's` definition the programmer can check for conditions
 and have branching step sequences the following manner:
 
 ```
-!main:
->^>v?ADDRESS(>^:<v)>
-
+?<Address>(<Code 1>:<Code 2>)
 ```
 
-The sequence to the left of the `:` symbol is executed if the value at `ADDRESS`
-is non-zero, otherwise the steps to the right of the `:` symbol will execute.
-Once the steps in the chosen branch ae over, in both cases the steps after the
-`)` symbol will execute. It is also possible to nest these conditionals over
-and over and over again like so:
-
-```
-!main:
->^>v?ADDRESS1(>?ADDRESS2(>^:<v)^:<v)>
-
-```
+The sequence to the left of the `:` symbol(Code 1) is executed if the value at `Address`
+is non-zero, otherwise the steps to the right of the `:` symbol(Code 2) will execute.
+Once the steps in the chosen branch are over, in both cases the steps after the
+`)` symbol will execute. It is also possible to nest these conditionals.
+- Note: `Address` must be a REG
 
 In this way movement as well parameter inputs to buildings can be controlled
 by conditionals. There will be no way to check for relational operators
 directly, and this is an intentional design to give more use to the relop
 buildings scaterred around the map. If one needs to check if one number is greater
 than the other, the agent would have to go and write use the relop building to
-write the result to `ADDRESS` and then use a conditional step later referrencing
+write the result to `Address` and then use a conditional step later referrencing
 that same address.
 
-Note: Parameters for building's can be marked as empty by simply adding typing
-nothing followed by a `#` symbol.
+### Using opcodes
 
-## Types of Building Parameters
+When an agent enters a building, the opcodes associated with that building will execute. Opcodes generally require parameters.
+The parameters can be given directly in the code, with each parameter ending with a `#`.
+
+```
+[Parameter 1]#[Parameter 2]#....#
+```
+
+## Types of opcode Parameters
 
 In `waralang` there are only truly three types of data
 that are cast down to when parameters are parsed:
@@ -116,6 +157,23 @@ exception will be raised. Furthermore, if you are at the
 will be treated as an `Agent identifier` and if an agent
 named `10` does exist, an exception will not be raised and
 it is considered valid `waralang` code.
+
+## Example code snippet:
+```
+use waraCode.wl
+tickrate 60
+
+!main:
+>^^countryoven##
+/* Spawns a country oven agent with no `life cycle address` assuming the actor
+ended up at the SPAWN_AGENT building*/
+
+!countryoven:
+>^<v8#10#[COUNTRYOVEN]#
+/* This is a comment (enclosed by /* */) ! F.Y.I. [COUNTRYOVEN] is a REG.
+If the actor ended up at the ADD building then this would add 8 and 10
+and store the result at address [COUNTRYOVEN]$ */
+```
 
 ## Ideas for further language features code features:
 - `agent` parameters - When spawning an agent you could

@@ -8,7 +8,7 @@
 int main(int argc, char** argv){
     char* appName = "wcoder";
 
-    if(argc != 3 || argc != 4){
+    if(argc != 3 && argc != 4){
         printEncoderErrorUsage(appName, argv[0]);
         return 1;
     }
@@ -21,6 +21,9 @@ int main(int argc, char** argv){
     }
 
     char* outPath = "./";
+    if(argc == 4){
+        outPath = argv[3];
+    }
     char* mapTextPath = argv[1];
     char* mapConfigPath = argv[2];
     if(strcmp(mapTextPath + strlen(mapTextPath) - 4, ".txt") != 0 || strcmp(mapConfigPath +

@@ -39,6 +39,8 @@ tickrate 20
 A main agent is required in evry `.wl` file.
 When the program is run, an instance of the main agent will spawn automatically.
 
+all new lines and whitespaces in agents code section will be ignored.
+
 ### Agents
 
 `agent` names and storage building names can only contain alphanumeric characters and `_`.
@@ -46,6 +48,7 @@ When the program is run, an instance of the main agent will spawn automatically.
 Declared with:
 ```
 !< agent name >([Parameter 1], [Parameter 2], ...):
+< instrutions >
 ```
 
 ### Agent code substitution

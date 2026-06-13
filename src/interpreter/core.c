@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <parser.h>
 #include <string.h>
+#include <interpreter.h>
 
 int main(int argc, char** argv){
     if(argc != 2){
@@ -23,10 +24,14 @@ int main(int argc, char** argv){
         printf("The path: %s does not point to a valid text file.\n", sourcePath);
     }
 
-    uint8_t parserStatus = parsewl(sourceFile);
+    Trie* agentsTrie;
+    char* wmapFilePath;
+    size_t tickRate;
+    uint8_t parserStatus = parsewl(sourceFile, &agentsTrie, &wmapFilePath, &tickRate);
 
     if(parserStatus == 0){
         fprintf(stderr, "\nparser error\n");
+        return 1;
     }
     else if(parserStatus == 1){
         fprintf(stderr, "\nparsing complete (≧∇≦)\n");

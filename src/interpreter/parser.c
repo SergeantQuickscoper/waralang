@@ -47,7 +47,7 @@ char* readWord(FILE* sourceFile, int* delims, int* delimFound, char** bufferPtr,
     }
 }
 
-uint8_t parsewl(FILE* sourceFile){
+uint8_t parsewl(FILE* sourceFile, Trie** agntsTriePtr, char** wmapFilePath, size_t* tickRate){
     char* wmap = malloc(sizeof(char)*1024);
     if(wmap==NULL){
         fprintf(stderr, "memory allocation error\n");
@@ -57,13 +57,13 @@ uint8_t parsewl(FILE* sourceFile){
         fprintf(stderr, ".wl must start with: \"use <path-to-wmap-file>\"\n");
         return 0;
     }
+    *wmapFilePath = wmap;
 
 
     while(fgetc(sourceFile) == '\n');
     fseek(sourceFile, -1, SEEK_CUR);
 
-    size_t tickrate;
-    if(fscanf(sourceFile, "tickrate %zu", &tickrate) != 1){
+    if(fscanf(sourceFile, "tickrate %zu", tickRate) != 1){
         fprintf(stderr, ".wl must contain \"tickrate <tickrate-amount>\" after use line.\n");
         return 0;
     }
@@ -72,6 +72,7 @@ uint8_t parsewl(FILE* sourceFile){
     fseek(sourceFile, -1, SEEK_CUR);
 
     Trie* agentsTrie = createTrie();
+    *agntsTriePtr = agentsTrie;
 
     int c = fgetc(sourceFile);
 
@@ -168,5 +169,9 @@ uint8_t parsewl(FILE* sourceFile){
         size_t codeSize;
         agent->rawInstructions = readWord(sourceFile, instructionDelims, &delimFound, &charBuffer, &charBufferCapacity);
     }
+
+    free(charBuffer);
+    free(paramBuffer);
+
     return 1;
 }

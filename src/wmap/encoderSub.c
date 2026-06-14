@@ -649,7 +649,7 @@ uint8_t encodeData(char* outPath, mapData* map){
                 sizeof(char), 1, outFile);
                 (map->mapMatrix + widthS * i + j)->bid = setSizeUDynamInt(
                     (map->mapMatrix + widthS * i + j)->bid, bidBytes);
-                fwrite(&((map->mapMatrix + widthS * i + j)->bid),
+                fwrite((map->mapMatrix + widthS * i + j)->bid->base,
                 sizeof(uint8_t), bidBytes, outFile);
         }
     }

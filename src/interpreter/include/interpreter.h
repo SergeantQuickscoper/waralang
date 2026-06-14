@@ -4,6 +4,6 @@
 #include <runtimeState.h>
 #include <trie.h>
 
-uint8_t interprer(runtimeState* mainRS, Trie* agentsTrie);
+uint8_t interpret(runtimeState* mainRS, Trie* agentsTrie);
 
 #endif

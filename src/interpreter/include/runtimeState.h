@@ -7,7 +7,7 @@
     during the execution of a waralang program.
 */
 
-#include <uDynamInt.h>
+#include <waralibs.h>
 
 enum direction {
     UP,
@@ -16,21 +16,24 @@ enum direction {
     RIGHT
 };
 
-// placeholder that should actually be defined in the core
-// and is immutable!
+// for each agent defined in the .wl file
+// immutable!
 typedef struct {
-    char* agentDefinitionID;
-} agent;
+    char* agentID;
+    char* rawInstructions;
+    char** params;
+    size_t paramsLength;
+} Agent;
 
 /*
    Struct for spawned instances of agents on the map.
 */
 typedef struct {
-    agent* instOf;
+    Agent* instOf;
     mapCell* currLoc;
     enum direction currDir;
     uDynamInt* programCounter;
-    char** actualParams;
+    Trie* actualParams;
 } agentInst;
 
 /*

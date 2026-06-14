@@ -45,7 +45,8 @@ void* insertElementTrie(Trie* trie, const char* string, const void* data){
         return (void*)-1;
     }
     TrieNode* curNode = trie->root;
-    for(size_t i = 0; i<strlen(string); i++){
+    size_t strlength = strlen(string);
+    for(size_t i = 0; i<strlength; i++){
         uint8_t id = getCharIdx(*(string+i));
         if(id>=CHILDREN_NUM){
             fprintf(stderr, "trie error. Invalid character ");
@@ -71,7 +72,8 @@ void* findElementTrie(const Trie* trie, const char* string){
         return (void*)-1;
     }
     TrieNode* curNode = trie->root;
-    for(size_t i = 0; i<strlen(string); i++){
+    size_t strlength = strlen(string);
+    for(size_t i = 0; i<strlength; i++){
         uint8_t id = getCharIdx(*(string+i));
         if(id>=CHILDREN_NUM){
             fprintf(stderr, "trie error. Invalid character ");

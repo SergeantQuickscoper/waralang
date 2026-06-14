@@ -7,7 +7,11 @@
     during the execution of a waralang program.
 */
 
+#include <stdint.h>
 #include <uDynamInt.h>
+
+// forward declarations
+typedef struct mapCell mapCell;
 
 enum direction {
     UP,
@@ -48,11 +52,11 @@ typedef struct {
     modified for agent considerations.
 */
 
-typedef struct {
+struct mapCell {
     char symbol;
     uDynamInt* bid;
     agentInst* activeAgent;
-} mapCell;
+};
 
 typedef struct {
     uDynamInt* width;
@@ -115,6 +119,11 @@ typedef struct {
     mapData* map;
     agentTable* aliveAgentsTable;
     bidMapTable* buildingsTable;
+    uDynamInt* spawnX;
+    uDynamInt* spawnY;
+    uint8_t spawnDirection;
+    uDynamInt* baseAddressBits;
+    uDynamInt* subAddressBits;
 } runtimeState;
 
 #endif

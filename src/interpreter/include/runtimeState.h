@@ -7,8 +7,14 @@
     during the execution of a waralang program.
 */
 
+#include <waralibs.h>
 #include <stdint.h>
-#include <uDynamInt.h>
+
+/*
+    get mapCell with coordinated (X,Y).
+    mainRS is a pointer to the runtimeState struct.
+*/
+#define getMapCell(mainRS, X, Y) mainRS->map->mapMatrix + (Y) * mainRS->map->width + (X)
 
 // forward declarations
 typedef struct mapCell mapCell;
@@ -20,21 +26,24 @@ enum direction {
     RIGHT
 };
 
-// placeholder that should actually be defined in the core
-// and is immutable!
+// for each agent defined in the .wl file
+// immutable!
 typedef struct {
-    char* agentDefinitionID;
-} agent;
+    char* agentID;
+    char* rawInstructions;
+    char** params;
+    size_t paramsLength;
+} Agent;
 
 /*
    Struct for spawned instances of agents on the map.
 */
 typedef struct {
-    agent* instOf;
+    Agent* instOf;
     mapCell* currLoc;
     enum direction currDir;
-    uDynamInt* programCounter;
-    char** actualParams;
+    size_t programCounter;
+    Trie* actualParams;
 } agentInst;
 
 /*
@@ -42,8 +51,9 @@ typedef struct {
    of synchronization. Program will terminate when size reaches zero.
 */
 typedef struct {
-    agentInst* base;
-    uDynamInt* size;
+    agentInst** base;
+    size_t size;
+    size_t capacity;
 } agentTable;
 
 
@@ -54,13 +64,13 @@ typedef struct {
 
 struct mapCell {
     char symbol;
-    uDynamInt* bid;
+    size_t bid;
     agentInst* activeAgent;
 };
 
 typedef struct {
-    uDynamInt* width;
-    uDynamInt* height;
+    size_t width;
+    size_t height;
     mapCell* mapMatrix;
 } mapData;
 
@@ -76,17 +86,17 @@ enum buildingType {
 
 typedef struct {
     uint8_t* opcodeSeq;
-    uDynamInt* opCodeSeqLength;
+    size_t opCodeSeqLength;
 } func;
 
 typedef struct {
     uint8_t* base;
-    uDynamInt* memSize;
+    size_t memSize;
 } mem;
 
 typedef struct {
     uint8_t* base;
-    uDynamInt* filled;
+    size_t filled;
 } reg;
 
 
@@ -98,14 +108,14 @@ union buildingPtr {
 
 
 typedef struct {
-    uDynamInt* bid;
+    size_t bid;
     enum buildingType type;
     union buildingPtr building;
 } bidMap;
 
 typedef struct {
     bidMap* bidMaps;
-    uDynamInt* buildingCount;
+    size_t buildingCount;
 } bidMapTable;
 
 
@@ -119,11 +129,10 @@ typedef struct {
     mapData* map;
     agentTable* aliveAgentsTable;
     bidMapTable* buildingsTable;
-    uDynamInt* spawnX;
-    uDynamInt* spawnY;
-    uint8_t spawnDirection;
-    uDynamInt* baseAddressBits;
-    uDynamInt* subAddressBits;
+    mapCell* spawnCell;
+    enum direction spawnDirection;
+    size_t baseAddressBits;
+    size_t subAddressBits;
 } runtimeState;
 
 #endif

@@ -1,8 +1,8 @@
 #include <parser.h>
-#include <interpreterCore.h>
 #include <string.h>
 #include <stdlib.h>
 #include <trie.h>
+#include <runtimeState.h>
 
 //always put EOF in delims array. delims array must end with '\0'
 char* readWord(FILE* sourceFile, int* delims, int* delimFound, char** bufferPtr, size_t* bufferCapacityPtr){

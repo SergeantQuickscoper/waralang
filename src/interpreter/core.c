@@ -39,6 +39,14 @@ int main(int argc, char** argv){
         fprintf(stderr, "\nparsing complete (≧∇≦)\n");
     }
     
-    runtimeState* mainRS = decodeWmap("out.wmap");
+    // TODO: make the path relative to .wl file
+    runtimeState* mainRS = decodeWmap(wmapFilePath);
+
+    uint8_t interprerStatus = interpret(mainRS, agentsTrie);
+    if(interprerStatus == 0){
+        fprintf(stderr, "\ninterpreter error\n");
+        return 1;
+    }
+
     return 0;
 }

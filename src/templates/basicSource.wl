@@ -1,7 +1,7 @@
-use ../../out.wmap
+use out.wmap
 tickrate 60
 
-!main(x):
+!main():
 <^<<<^^^<<v8
 
 !spare(x, y):

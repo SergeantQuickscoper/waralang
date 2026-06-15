@@ -45,20 +45,28 @@ runtimeState* decodeWmap(char* wmapPath){
         free(width);
         return NULL;
     }
-    state->map->height = height;
-    state->map->width = width;
-    fread(state->map->height->base, sizeof(uint8_t), heightBytes, wmapFile);
-    fread(state->map->width->base, sizeof(uint8_t), widthBytes, wmapFile);
+    fread(height->base, sizeof(uint8_t), heightBytes, wmapFile);
+    fread(width->base, sizeof(uint8_t), widthBytes, wmapFile);
+    state->map->height = uDynamIntToSizeT(height);
+    state->map->width = uDynamIntToSizeT(width);
     fread(&bidSizeBytes, sizeof(uint8_t), 1, wmapFile);
 
-    state->spawnX = createUDynamInt(widthBytes);
-    fread(state->spawnX->base, sizeof(uint8_t), widthBytes, wmapFile);
-    state->spawnY = createUDynamInt(heightBytes);
-    fread(state->spawnY->base, sizeof(uint8_t), heightBytes, wmapFile);
+    uDynamInt* spawnX = createUDynamInt(widthBytes);
+    fread(spawnX->base, sizeof(uint8_t), widthBytes, wmapFile);
+    uDynamInt* spawnY = createUDynamInt(heightBytes);
+    fread(spawnY->base, sizeof(uint8_t), heightBytes, wmapFile);
+    // NOTE/TODO for @sergeantQuickscoper: mapmatrix must be initialized before this
+    state->spawnCell = getMapCell(state, uDynamIntToSizeT(spawnX), uDynamIntToSizeT(spawnY));
 
+    // TODO for @sergeantQuickscoper: turn this from char to enum
     fread(&(state->spawnDirection), sizeof(uint8_t), 1, wmapFile);
     fread(&wordSizeBytes, sizeof(uint8_t), 1, wmapFile);
 
+    state->aliveAgentsTable = malloc(sizeof(agentTable));
+    
+    state->aliveAgentsTable->capacity = 1024;
+    state->aliveAgentsTable->size = 0;
+    state->aliveAgentsTable->base = malloc(sizeof(agentInst*) * state->aliveAgentsTable->capacity);
 
     fclose(wmapFile);
     return state;

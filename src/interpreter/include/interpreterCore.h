@@ -1,6 +1,0 @@
-#ifndef INTERPRETERCORE
-#define INTERPRETERCORE
-
-
-
-#endif

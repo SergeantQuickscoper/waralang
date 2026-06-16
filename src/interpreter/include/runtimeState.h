@@ -36,7 +36,7 @@ typedef struct {
 } Agent;
 
 /*
-   Struct for spawned instances of agents on the map.
+   Struct to store spawned instances of agents on the map.
 */
 typedef struct {
     Agent* instOf;
@@ -75,7 +75,7 @@ typedef struct {
 } mapData;
 
 /*
-    The following structs are used to represent logical building objecs.
+    The following structs are used to represent logical building objects.
 */
 
 enum buildingType {

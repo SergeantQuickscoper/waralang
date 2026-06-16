@@ -24,7 +24,7 @@ Here is a brief description of the contents of the binary file, in order:
 
 - `width` - `widthBytes` bytes - Specifies the width of the ASCII map.
 
-- `bidSize` - `bidBytes` bytes - Specifies the number of bytes used to
+- `bidSize` - 1 byte - Specifies the number of bytes used to
   represent a singular building on the ASCII map.
 
 - `spawnX` - `widthBytes` bytes - Specifies the starting x-coordinate.

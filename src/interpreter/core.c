@@ -20,7 +20,7 @@ int main(int argc, char** argv){
     }
 
     FILE* sourceFile = fopen(sourcePath, "r");
-    
+
     if(sourceFile == NULL){
         printf("winterp error! Text File Not Found!\n");
         printf("The path: %s does not point to a valid text file.\n", sourcePath);
@@ -38,7 +38,7 @@ int main(int argc, char** argv){
     else if(parserStatus == 1){
         fprintf(stderr, "\nparsing complete (≧∇≦)\n");
     }
-    
+
     // TODO: make the path relative to .wl file
     runtimeState* mainRS = decodeWmap(wmapFilePath);
 

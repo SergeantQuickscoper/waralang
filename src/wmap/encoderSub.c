@@ -434,7 +434,7 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
     array_list* buildingsArr = json_object_get_array(buildingsArrObj);
 
     const uint8_t ALLOWEDOPCODESLENGTH = sizeof(ALLOWEDOPCODES)/sizeof(ALLOWEDOPCODES[0]);
-    
+
     map->buildings = malloc(sizeof(bidMap) * buildingsArr->length);
     size_t memCount = 0;
     size_t i;

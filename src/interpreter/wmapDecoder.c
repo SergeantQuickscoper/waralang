@@ -2,13 +2,14 @@
 
 runtimeState* decodeWmap(char* wmapPath){
 
-    // storage variables to help with decoding alloc
+    // temp variables to help with decoding alloc
     uint8_t heightBytes;
     uint8_t widthBytes;
     uint8_t bidSizeBytes;
     uint8_t spawnXBytes;
     uint8_t spawnYBytes;
     uint8_t wordSizeBytes;
+    char spawnDirectionTemp;
 
     FILE* wmapFile = fopen(wmapPath, "rb");
     if(wmapFile == NULL){
@@ -33,7 +34,6 @@ runtimeState* decodeWmap(char* wmapPath){
         File reading actually starts here.
         TODO: replace this with helpers.
     */
-
     fread(&heightBytes, sizeof(uint8_t), 1, wmapFile);
     fread(&widthBytes, sizeof(uint8_t), 1, wmapFile);
     uDynamInt* height = createUDynamInt(heightBytes);
@@ -55,18 +55,59 @@ runtimeState* decodeWmap(char* wmapPath){
     fread(spawnX->base, sizeof(uint8_t), widthBytes, wmapFile);
     uDynamInt* spawnY = createUDynamInt(heightBytes);
     fread(spawnY->base, sizeof(uint8_t), heightBytes, wmapFile);
-    // NOTE/TODO for @sergeantQuickscoper: mapmatrix must be initialized before this
-    state->spawnCell = getMapCell(state, uDynamIntToSizeT(spawnX), uDynamIntToSizeT(spawnY));
 
-    // TODO for @sergeantQuickscoper: turn this from char to enum
-    fread(&(state->spawnDirection), sizeof(uint8_t), 1, wmapFile);
+    fread(&spawnDirectionTemp, sizeof(uint8_t), 1, wmapFile);
+    switch(spawnDirectionTemp){
+        case '>':
+            state->spawnDirection = RIGHT;
+            break;
+        case 'v':
+            state->spawnDirection = DOWN;
+            break;
+        case '<':
+            state->spawnDirection = LEFT;
+            break;
+        case '^':
+            state->spawnDirection = UP;
+            break;
+        default:
+            fprintf(stderr, "wmapDecoder error: Invalid spawn direction parsed\n");
+            return NULL;
+    }
+
     fread(&wordSizeBytes, sizeof(uint8_t), 1, wmapFile);
 
     state->aliveAgentsTable = malloc(sizeof(agentTable));
-    
     state->aliveAgentsTable->capacity = 1024;
     state->aliveAgentsTable->size = 0;
-    state->aliveAgentsTable->base = malloc(sizeof(agentInst*) * state->aliveAgentsTable->capacity);
+    state->aliveAgentsTable->base = malloc(sizeof(agentInst*) *
+    state->aliveAgentsTable->capacity);
+
+    fread(&(state->baseAddressBits), sizeof(uint8_t), wordSizeBytes, wmapFile);
+    fread(&(state->subAddressBits), sizeof(uint8_t), wordSizeBytes, wmapFile);
+
+    size_t heightS = state->map->height;
+    size_t widthS = state->map->height;
+    size_t maxBidExcludingReserved = 0;
+    for(size_t i = 0; i < heightS; i++){
+        for(size_t j = 0; j < widthS; j++){
+           mapCell* curr = (state->map->mapMatrix + i * widthS + j);
+           fread(&(curr->symbol), sizeof(uint8_t), 1, wmapFile);
+           fread(&(curr->bid), sizeof(uint8_t), sizeof(bidSizeBytes),
+           wmapFile);
+           if(curr->bid > (1 << bidSizeBytes)){
+            fprintf(stderr, "wmapDecoder error: unexpected bid %zu encountered"
+                "within cells.\nValue is greater than defined bidSize of %zu"
+                "bytes", curr->bid, bidSizeBytes);
+           }
+           if(curr->bid < (1 << bidSizeBytes) - 3 && curr->bid >
+           maxBidExcludingReserved){
+            maxBidExcludingReserved = curr->bid;
+           }
+        }
+    }
+
+    state->spawnCell = getMapCell(state, uDynamIntToSizeT(spawnX), uDynamIntToSizeT(spawnY));
 
     fclose(wmapFile);
     return state;

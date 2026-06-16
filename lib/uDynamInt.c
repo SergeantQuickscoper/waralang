@@ -6,6 +6,7 @@
 uDynamInt* createUDynamInt(uint8_t byteSize){
     if(byteSize == 0){
         fprintf(stderr, "Thats not how you use createUDynamInt!");
+        return NULL;
     }
     uDynamInt* obj = malloc(sizeof(uDynamInt));
     if(obj == NULL) return NULL;

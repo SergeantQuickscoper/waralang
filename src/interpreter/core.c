@@ -41,6 +41,11 @@ int main(int argc, char** argv){
 
     // TODO: make the path relative to .wl file
     runtimeState* mainRS = decodeWmap(wmapFilePath);
+    if(mainRS == NULL){
+        fprintf(stderr, "winterp error: NULL runtime state, could not decode"
+            " the .wmap file.\n");
+        return 1;
+    }
 
     uint8_t interprerStatus = interpret(mainRS, agentsTrie);
     if(interprerStatus == 0){

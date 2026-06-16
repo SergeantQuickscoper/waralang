@@ -77,7 +77,6 @@ typedef struct {
 /*
     The following structs are used to represent logical building objects.
 */
-
 enum buildingType {
     FUNCTYPE,
     REGTYPE,
@@ -133,6 +132,7 @@ typedef struct {
     enum direction spawnDirection;
     size_t baseAddressBits;
     size_t subAddressBits;
+    size_t maxNonReservedBid;
 } runtimeState;
 
 #endif

@@ -1,15 +1,14 @@
 #include "wmapDecoder.h"
 
 runtimeState* decodeWmap(char* wmapPath){
-
     // temp variables to help with decoding alloc
-    uint8_t heightBytes;
-    uint8_t widthBytes;
-    uint8_t bidSizeBytes;
-    uint8_t spawnXBytes;
-    uint8_t spawnYBytes;
-    uint8_t wordSizeBytes;
-    char spawnDirectionTemp;
+    uint8_t heightBytes = 0;
+    uint8_t widthBytes = 0;
+    uint8_t bidSizeBytes = 0;
+    uint8_t spawnXBytes = 0;
+    uint8_t spawnYBytes = 0;
+    uint8_t wordSizeBytes = 0;
+    char spawnDirectionTemp = 0;
 
     FILE* wmapFile = fopen(wmapPath, "rb");
     if(wmapFile == NULL){
@@ -55,8 +54,8 @@ runtimeState* decodeWmap(char* wmapPath){
     fread(spawnX->base, sizeof(uint8_t), widthBytes, wmapFile);
     uDynamInt* spawnY = createUDynamInt(heightBytes);
     fread(spawnY->base, sizeof(uint8_t), heightBytes, wmapFile);
-
     fread(&spawnDirectionTemp, sizeof(uint8_t), 1, wmapFile);
+
     switch(spawnDirectionTemp){
         case '>':
             state->spawnDirection = RIGHT;
@@ -83,31 +82,81 @@ runtimeState* decodeWmap(char* wmapPath){
     state->aliveAgentsTable->base = malloc(sizeof(agentInst*) *
     state->aliveAgentsTable->capacity);
 
+    // this is to get rid of garbage values
+    // also could just memset the entire state
+    // struct to zero too i suppose
+    state->baseAddressBits = 0;
+    state->subAddressBits = 0;
     fread(&(state->baseAddressBits), sizeof(uint8_t), wordSizeBytes, wmapFile);
     fread(&(state->subAddressBits), sizeof(uint8_t), wordSizeBytes, wmapFile);
 
     size_t heightS = state->map->height;
-    size_t widthS = state->map->height;
+    size_t widthS = state->map->width;
     size_t maxBidExcludingReserved = 0;
+
+    state->map->mapMatrix = (mapCell*)malloc(sizeof(mapCell) *
+    state->map->width * state->map->height);
+
+    if(state->map->mapMatrix == NULL){
+        fprintf(stderr, "wmapDecoder error: unable to allocate memory for map"
+            "data, your map is probably too big!\n");
+        return NULL;
+    }
+
     for(size_t i = 0; i < heightS; i++){
         for(size_t j = 0; j < widthS; j++){
            mapCell* curr = (state->map->mapMatrix + i * widthS + j);
-           fread(&(curr->symbol), sizeof(uint8_t), 1, wmapFile);
-           fread(&(curr->bid), sizeof(uint8_t), sizeof(bidSizeBytes),
+           fread(&(curr->symbol), sizeof(char), 1, wmapFile);
+           curr->bid = 0;
+           fread(&(curr->bid), sizeof(uint8_t), bidSizeBytes,
            wmapFile);
-           if(curr->bid > (1 << bidSizeBytes)){
-            fprintf(stderr, "wmapDecoder error: unexpected bid %zu encountered"
-                "within cells.\nValue is greater than defined bidSize of %zu"
-                "bytes", curr->bid, bidSizeBytes);
+           // holy redundant
+           if(curr->bid > (1 << (bidSizeBytes * 8))){
+            fprintf(stderr, "\nwmapDecoder error: unexpected bid %zu encountered"
+                " within cells. Value is greater than defined bidSize of %zu"
+                " bytes.\n", curr->bid, bidSizeBytes);
+                return NULL;
            }
-           if(curr->bid < (1 << bidSizeBytes) - 3 && curr->bid >
+           if(curr->bid < (1 << (bidSizeBytes * 8)) - 3 && curr->bid >
            maxBidExcludingReserved){
             maxBidExcludingReserved = curr->bid;
            }
+           fprintf(stderr, "%c", curr->symbol);
         }
+        fprintf(stderr, "\n");
+    }
+    state->spawnCell = getMapCell(state, uDynamIntToSizeT(spawnX), uDynamIntToSizeT(spawnY));
+    state->maxNonReservedBid =  maxBidExcludingReserved;
+
+    for(size_t i = 0; i < 6; i++){
+        uint8_t opCodeBytes = 0;
+        size_t opCodeSeqLength = 0;
+        uint8_t firstOp = 0;
+        fread(&opCodeBytes, sizeof(uint8_t), 1, wmapFile);
+        fread(&opCodeSeqLength, sizeof(uint8_t), opCodeBytes, wmapFile);
+        if(opCodeSeqLength == 0){
+            fprintf(stderr, "\nwmapDecoder error: an opcode sequence must"
+            "have at least one opcode in it.");
+            return NULL;
+        }
+        /*
+            MEM OPCODE - 00000001
+            REG OPCODE - 00000010
+        */
+       fread(&(firstOp), sizeof(uint8_t), 1, wmapFile);
+       switch(firstOp){
+        case 1:
+            // MEM logic
+            break;
+        case 2:
+            // REG logic
+            break;
+        default:
+            // FUNC logic
+            break;
+       }
     }
 
-    state->spawnCell = getMapCell(state, uDynamIntToSizeT(spawnX), uDynamIntToSizeT(spawnY));
 
     fclose(wmapFile);
     return state;

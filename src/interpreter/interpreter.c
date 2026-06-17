@@ -39,22 +39,21 @@ agentInst* spawnAgent(Agent* agent, char** actualParams, size_t paramsLength, ru
     inst->currDir = mainRS->spawnDirection;
     inst->programCounter = 0;
 
-    mainRS->aliveAgentsTable->size++;
-    if(mainRS->aliveAgentsTable->size > mainRS->aliveAgentsTable->capacity){
-        mainRS->aliveAgentsTable->capacity *= 2;
-        mainRS->aliveAgentsTable->base = realloc(mainRS->aliveAgentsTable->base, sizeof(agentInst*) * mainRS->aliveAgentsTable->capacity);
-        if(mainRS->aliveAgentsTable->base == NULL){
-            fprintf(stderr, "error allocationg memory for alive agents table.");
-            return NULL;
-        }
+    inst->agentsLLNext = NULL;
+    if(mainRS->aliveAgentsLL->head == NULL){
+        mainRS->aliveAgentsLL->head = mainRS->aliveAgentsLL->tail = inst;
     }
-
-    mainRS->aliveAgentsTable->base[mainRS->aliveAgentsTable->size - 1] = inst;
+    else{
+        mainRS->aliveAgentsLL->tail->agentsLLNext = inst;
+        mainRS->aliveAgentsLL->tail = inst;
+    }
 
     return inst;
 }
 
 uint8_t interpret(runtimeState* mainRS, Trie* agentsTrie){
+    size_t tick = 0;
+
     Agent* main = (Agent*)findElementTrie(agentsTrie, "main");
     
     if(main==agentsTrie->notEndPtr){

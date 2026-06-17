@@ -38,23 +38,26 @@ typedef struct {
 /*
    Struct for spawned instances of agents on the map.
 */
-typedef struct {
+typedef struct agentInst{
     Agent* instOf;
     mapCell* currLoc;
     enum direction currDir;
     size_t programCounter;
     Trie* actualParams;
+
+    // next element in linked list of alive agents
+    struct agentInst* agentsLLNext;
 } agentInst;
 
+
 /*
-   Array of active agent instances ordered by priority in the context
-   of synchronization. Program will terminate when size reaches zero.
+    linked list of agents.
+    Used to store alive agents.
 */
 typedef struct {
-    agentInst** base;
-    size_t size;
-    size_t capacity;
-} agentTable;
+    agentInst* head;
+    agentInst* tail;
+} agentsLinkedList;
 
 
 /*
@@ -127,7 +130,7 @@ typedef struct {
 
 typedef struct {
     mapData* map;
-    agentTable* aliveAgentsTable;
+    agentsLinkedList* aliveAgentsLL;
     bidMapTable* buildingsTable;
     mapCell* spawnCell;
     enum direction spawnDirection;

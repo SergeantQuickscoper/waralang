@@ -62,11 +62,8 @@ runtimeState* decodeWmap(char* wmapPath){
     fread(&(state->spawnDirection), sizeof(uint8_t), 1, wmapFile);
     fread(&wordSizeBytes, sizeof(uint8_t), 1, wmapFile);
 
-    state->aliveAgentsTable = malloc(sizeof(agentTable));
-    
-    state->aliveAgentsTable->capacity = 1024;
-    state->aliveAgentsTable->size = 0;
-    state->aliveAgentsTable->base = malloc(sizeof(agentInst*) * state->aliveAgentsTable->capacity);
+    state->aliveAgentsLL = malloc(sizeof(agentsLinkedList));
+    state->aliveAgentsLL->head = state->aliveAgentsLL->tail = NULL;
 
     fclose(wmapFile);
     return state;

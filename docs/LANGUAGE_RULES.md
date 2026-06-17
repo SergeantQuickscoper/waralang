@@ -36,7 +36,7 @@ tickrate 20
 
 ## `agents` code section
 
-A main agent is required in evry `.wl` file.
+A main agent is required in every `.wl` file.
 When the program is run, an instance of the main agent will spawn automatically.
 
 all new lines and whitespaces in agents code section will be ignored.

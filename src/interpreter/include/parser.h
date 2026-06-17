@@ -1,5 +1,6 @@
 #ifndef PARSER
 #define PARSER
+
 #include <stdio.h>
 #include <stdint.h>
 #include <trie.h>

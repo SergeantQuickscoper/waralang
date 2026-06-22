@@ -117,6 +117,7 @@ runtimeState* decodeWmap(char* wmapPath){
                 " bytes.\n", curr->bid, bidSizeBytes);
                 return NULL;
            }
+           if(curr->bid < 253) fprintf(stderr, "%d\n", curr->bid);
            if(curr->bid < (1 << (bidSizeBytes * 8)) - 3 && curr->bid >
            maxBidExcludingReserved){
             maxBidExcludingReserved = curr->bid;
@@ -128,7 +129,15 @@ runtimeState* decodeWmap(char* wmapPath){
     state->spawnCell = getMapCell(state, uDynamIntToSizeT(spawnX), uDynamIntToSizeT(spawnY));
     state->maxNonReservedBid =  maxBidExcludingReserved;
 
-    for(size_t i = 0; i < 6; i++){
+    // the current implementation is a bit wasteful in memory for the hashmap, assuming
+    // every building is a mem or reg, the best solution to this is to replace this with
+    // a dynamic hashmap but ill leave this as a TODO.
+    state->addressToStoreLocMap = createHashMap(maxBidExcludingReserved);
+    state->buildingsTable = createHashMap(maxBidExcludingReserved);
+    if(state->addressToStoreLocMap == NULL || state->buildingsTable == NULL){
+        return NULL;
+    }
+    for(size_t i = 0; i <= maxBidExcludingReserved; i++){
         uint8_t opCodeBytes = 0;
         size_t opCodeSeqLength = 0;
         uint8_t firstOp = 0;
@@ -144,17 +153,109 @@ runtimeState* decodeWmap(char* wmapPath){
             REG OPCODE - 00000010
         */
        fread(&(firstOp), sizeof(uint8_t), 1, wmapFile);
+       void* currBuilding = NULL;
        switch(firstOp){
         case 1:
-            // MEM logic
+            uint8_t baseAddressLen;
+            char* baseAddressName;
+            uint8_t memSizeBytes;
+            uDynamInt* memSize;
+            fread(&(baseAddressLen), sizeof(uint8_t), 1, wmapFile);
+            baseAddressName = (char*)malloc(sizeof(char) * baseAddressLen);
+            fread(baseAddressName, sizeof(char), baseAddressLen, wmapFile);
+            fread(&(memSizeBytes), sizeof(uint8_t), 1, wmapFile);
+            mem* currMemBuilding = (mem*)malloc(sizeof(mem));
+            currMemBuilding->type = MEMTYPE;
+            fread(&(currMemBuilding->memSize), sizeof(uint8_t), memSizeBytes,
+            wmapFile);
+            currMemBuilding->base = (uint8_t*)malloc(sizeof(uint8_t) *
+            currMemBuilding->memSize);
+            memset(currMemBuilding->base, 0, currMemBuilding->memSize);
+
+            void* isThereMem = findKey(state->addressToStoreLocMap,
+                baseAddressName, baseAddressLen);
+
+            if(isThereMem != NULL){
+                fprintf(stderr, "wmapDecoder error: error occured while"
+                " parsing bid map. Duplicate mem/reg addresses found!");
+            }
+
+            uint8_t resMem = insertKey(state->addressToStoreLocMap,
+                baseAddressName, baseAddressLen, currMemBuilding);
+
+            if(resMem == 0){
+                fprintf(stderr, "wmapDecoder error: error occured while"
+                " parsing bid map. Failed to insert entry to address map");
+            }
+
+            currBuilding = currMemBuilding;
+
             break;
         case 2:
-            // REG logic
+            uint8_t regNameLen;
+            char* regName;
+            fread(&(regNameLen), sizeof(uint8_t), 1, wmapFile);
+            regName = (char*)malloc(sizeof(char) * regNameLen);
+            fread(regName, sizeof(char), regNameLen, wmapFile);
+            reg* currRegister = (reg*)malloc(sizeof(reg));
+            currRegister->type = REGTYPE;
+            currRegister->filled = 0;
+            currRegister->base = (uint8_t*)malloc(sizeof(uint8_t) *
+            (state->baseAddressBits + state->subAddressBits));
+            memset(currRegister->base, 0, (state->baseAddressBits + state->subAddressBits));
+
+            void* isThereReg = findKey(state->addressToStoreLocMap,
+                regName, regNameLen);
+
+            if(isThereReg != NULL){
+                fprintf(stderr, "wmapDecoder error: error occured while"
+                " parsing bid map. Duplicate mem/reg addresses found!");
+                return NULL;
+            }
+
+            uint8_t resReg = insertKey(state->addressToStoreLocMap,
+                regName, regNameLen, currRegister);
+
+            if(resReg == 0){
+                fprintf(stderr, "wmapDecoder error: error occured while"
+                " parsing bid map. Failed to insert entry to address map");
+                return NULL;
+            }
+
+            currBuilding = currRegister;
+
             break;
         default:
-            // FUNC logic
+            func* currFunc = (func*)malloc(sizeof(func));
+            currFunc->type = FUNCTYPE;
+            currFunc->opCodeSeqLength = opCodeSeqLength;
+            currFunc->opcodeSeq = (uint8_t*)malloc(opCodeSeqLength);
+            *(currFunc->opcodeSeq) = firstOp;
+            uint8_t currOp = 0;
+            for(size_t i = 1; i < opCodeSeqLength; i++){
+                fread(&currOp, sizeof(uint8_t), 1, wmapFile);
+                currFunc->opcodeSeq[i] = currOp;
+            }
+
+            currBuilding = currFunc;
+
             break;
        }
+
+       void* isThereBid = findKey(state->buildingsTable, &i, sizeof(i));
+       if(isThereBid != NULL || currBuilding == NULL){
+            fprintf(stderr, "wmapDecoder error: error occured while"
+            " parsing bid map. Duplicate bid found!");
+            return NULL;
+       }
+       uint8_t res = insertKey(state->addressToStoreLocMap,
+            &i, sizeof(i), currBuilding);
+
+        if(res == 0){
+            fprintf(stderr, "wmapDecoder error: error occured while"
+            " parsing bid map. Failed to insert entry to bid map");
+            return NULL;
+        }
     }
 
 

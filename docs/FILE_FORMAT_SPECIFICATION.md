@@ -76,16 +76,16 @@ Here is a brief description of the contents of the binary file, in order:
   representing the name of the register.
 
   And in the case of `MEM` buildings we have:
-  - `baseAddressBytes` - 1 byte - Specifies the length of the the register's
-  name.
+  - `baseAddressBytes` - 1 byte - Specifies the length of the the memory
+  block's name.
   - `baseAddress` - `baseAddressBytes` bytes - A sequence of ASCII characters
-  representing the name of the register.
+  representing the name of the memory block.
   - `memSizeBytes` - 1 byte - Specifies how many of the next bytes are for
   specifying the size of the primary memory of the current building.
   - `memSize` - `memSizeBytes` bytes - Specifies the size of the primary
   memory for the current building.
 
-  **Note**: I am also considering just have an extra byte before `opcodeBytes`
+  **Note**: I am also considering to just have an extra byte before `opcodeBytes`
   to just specify which of the 3 types it is, so that might be a change to add
   as we add more types but now with the limited number of opcodes and types I
   feel like this is fine.

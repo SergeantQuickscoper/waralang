@@ -5,5 +5,6 @@
 
 #include <uDynamInt.h>
 #include <trie.h>
+#include <hashmap.h>
 
 #endif

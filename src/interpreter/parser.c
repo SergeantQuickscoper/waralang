@@ -20,7 +20,7 @@ char* readWord(FILE* sourceFile, int* delims, int* delimFound, char** bufferPtr,
             if(c==*delimPtr){
                 *bufferPtr = buffer;
                 *bufferCapacityPtr = bufferCapacity;
-                
+
                 *delimFound = c;
                 char* res = malloc(sizeof(char) * (bufferSize+1));
                 if(res==NULL){

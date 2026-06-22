@@ -39,7 +39,9 @@ uDynamInt* setSizeUDynamInt(uDynamInt* obj, uint8_t newSize){
         return NULL;
     }
     if(newSize < obj->size){
+        printNum(obj);
         fprintf(stderr, "DynamicInt Error: newSize cannot be lower than existing size!\n");
+        fprintf(stderr, "New Size %d, Old Size %d\n", newSize, obj->size);
         return NULL;
     }
     uDynamInt* temp = createUDynamInt(newSize);

@@ -56,14 +56,14 @@ agentInst* spawnAgent(Agent* agent, char** actualParams, size_t paramsLength, ru
 
 uint8_t interpret(runtimeState* mainRS, Trie* agentsTrie){
     Agent* main = (Agent*)findElementTrie(agentsTrie, "main");
-    
+
     if(main==agentsTrie->notEndPtr){
         fprintf(stderr, "main agent not found in .wl file.\n");
         return 0;
     }
-    
+
     agentInst* mainInst =  spawnAgent(main, NULL, 0, mainRS);
-    
+
     if(mainInst == NULL){
         return 0;
     }

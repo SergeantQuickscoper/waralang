@@ -117,17 +117,13 @@ runtimeState* decodeWmap(char* wmapPath){
                 " bytes.\n", curr->bid, bidSizeBytes);
                 return NULL;
            }
-           if(curr->bid < 253) fprintf(stderr, "%d\n", curr->bid);
            if(curr->bid < (1 << (bidSizeBytes * 8)) - 3 && curr->bid >
            maxBidExcludingReserved){
             maxBidExcludingReserved = curr->bid;
            }
-           fprintf(stderr, "%c", curr->symbol);
         }
-        fprintf(stderr, "\n");
     }
     state->spawnCell = getMapCell(state, uDynamIntToSizeT(spawnX), uDynamIntToSizeT(spawnY));
-    state->maxNonReservedBid =  maxBidExcludingReserved;
 
     // the current implementation is a bit wasteful in memory for the hashmap, assuming
     // every building is a mem or reg, the best solution to this is to replace this with
@@ -137,7 +133,7 @@ runtimeState* decodeWmap(char* wmapPath){
     if(state->addressToStoreLocMap == NULL || state->buildingsTable == NULL){
         return NULL;
     }
-    for(size_t i = 0; i <= maxBidExcludingReserved; i++){
+    for(size_t i = 1; i <= maxBidExcludingReserved; i++){
         uint8_t opCodeBytes = 0;
         size_t opCodeSeqLength = 0;
         uint8_t firstOp = 0;
@@ -145,7 +141,7 @@ runtimeState* decodeWmap(char* wmapPath){
         fread(&opCodeSeqLength, sizeof(uint8_t), opCodeBytes, wmapFile);
         if(opCodeSeqLength == 0){
             fprintf(stderr, "\nwmapDecoder error: an opcode sequence must"
-            "have at least one opcode in it.");
+            " have at least one opcode in it.\n");
             return NULL;
         }
         /*
@@ -257,8 +253,7 @@ runtimeState* decodeWmap(char* wmapPath){
             return NULL;
         }
     }
-
-
     fclose(wmapFile);
+    fprintf(stderr, "wmap decoding complete! B)\n");
     return state;
 }

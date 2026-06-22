@@ -94,6 +94,7 @@ uint8_t fillBuildings(mapData* mapData){
         for(size_t j = 0; j < widthS; j++){
             if((mapData->mapMatrix + i * widthS + j)->symbol ==
             mapData->buildingSymbol){
+                // bids ARE NOT ZERO INDEXED! bidCount is a true COUNT!
                 bidCount = incrementValUDynamInt(bidCount);
                 uDynamInt* currInd = copyUDynamInt(bidCount);
                 dfs(mapData, currInd, heightS, widthS, j, i);

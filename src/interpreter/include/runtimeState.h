@@ -119,7 +119,6 @@ typedef struct {
     enum direction spawnDirection;
     size_t baseAddressBits;
     size_t subAddressBits;
-    size_t maxNonReservedBid;
     hashMap* addressToStoreLocMap;
     hashMap* buildingsTable;
 } runtimeState;

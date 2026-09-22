@@ -20,7 +20,7 @@ char* readWord(FILE* sourceFile, int* delims, int* delimFound, char** bufferPtr,
             if(c==*delimPtr){
                 *bufferPtr = buffer;
                 *bufferCapacityPtr = bufferCapacity;
-                
+
                 *delimFound = c;
                 char* res = malloc(sizeof(char) * (bufferSize+1));
                 if(res==NULL){
@@ -165,9 +165,11 @@ uint8_t parsewl(FILE* sourceFile, Trie** agntsTriePtr, char** wmapFilePath, size
         }
         agent->paramsLength = paramBuffereSize;
 
-        //read code
+        //read instructions
         size_t codeSize;
+        fgetc(sourceFile); // for ':'
         agent->rawInstructions = readWord(sourceFile, instructionDelims, &delimFound, &charBuffer, &charBufferCapacity);
+        fprintf(stderr, "%s: %s\n", agent->agentID, agent->rawInstructions);
     }
 
     free(charBuffer);

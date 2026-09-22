@@ -32,7 +32,7 @@ void dfs(mapData* mapData, uDynamInt* currInd, size_t height, size_t width,
     int8_t movesX[4] = {1, 0, -1, 0};
     int8_t movesY[4] = {0, -1, 0, 1};
     (mapData->mapMatrix + currY * width + currX)->symbol = 0; // arbitrary
-    (mapData->mapMatrix + currY * width + currX)->bid = currInd;
+    (mapData->mapMatrix + currY * width + currX)->bid = copyUDynamInt(currInd);
     // TODO: do something about this magic number too when applying config.
     // and the hardcoded invalid moves
     for(uint8_t i = 0; i < 4; i++){
@@ -94,6 +94,7 @@ uint8_t fillBuildings(mapData* mapData){
         for(size_t j = 0; j < widthS; j++){
             if((mapData->mapMatrix + i * widthS + j)->symbol ==
             mapData->buildingSymbol){
+                // bids ARE NOT ZERO INDEXED! bidCount is a true COUNT!
                 bidCount = incrementValUDynamInt(bidCount);
                 uDynamInt* currInd = copyUDynamInt(bidCount);
                 dfs(mapData, currInd, heightS, widthS, j, i);
@@ -120,6 +121,9 @@ uint8_t fillBuildings(mapData* mapData){
         for(size_t j = 0; j < widthS; j++){
             char thisSym = (mapData->mapMatrix + i * widthS + j)->symbol;
             size_t bidMax = (1 << ((mapData->bidCount->size) * 8)) - 1;
+            if(thisSym == 0){
+                continue;
+            }
             if(thisSym == mapData->junctionSymbol){
                 (mapData->mapMatrix + i * widthS + j)->bid = sizeTToUDynamInt(bidMax - 2);
             }
@@ -434,7 +438,7 @@ uint8_t initializeConfigData(json_object* configObj, mapData* map){
     array_list* buildingsArr = json_object_get_array(buildingsArrObj);
 
     const uint8_t ALLOWEDOPCODESLENGTH = sizeof(ALLOWEDOPCODES)/sizeof(ALLOWEDOPCODES[0]);
-    
+
     map->buildings = malloc(sizeof(bidMap) * buildingsArr->length);
     size_t memCount = 0;
     size_t i;
@@ -605,6 +609,7 @@ uint8_t encodeData(char* outPath, mapData* map){
     if(strlen(outPath) == 0){
         return 0;
     }
+    printCurrMapMatrix(map);
     FILE* outFile;
     char* finOut = outPath;
     uint8_t allocFlag = 0;

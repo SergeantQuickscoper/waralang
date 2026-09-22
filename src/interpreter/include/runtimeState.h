@@ -36,7 +36,7 @@ typedef struct {
 } Agent;
 
 /*
-   Struct for spawned instances of agents on the map.
+   Struct to store spawned instances of agents on the map.
 */
 typedef struct agentInst{
     Agent* instOf;
@@ -65,7 +65,6 @@ typedef struct {
     Structs coming over from our encoderSub.h but
     modified for agent considerations.
 */
-
 struct mapCell {
     char symbol;
     size_t bid;
@@ -79,26 +78,28 @@ typedef struct {
 } mapData;
 
 /*
-    The following structs are used to represent logical building objecs.
+    The following structs are used to represent logical building objects.
 */
-
-enum buildingType {
+typedef enum {
     FUNCTYPE,
     REGTYPE,
     MEMTYPE
-};
+} buildingType;
 
 typedef struct {
+    buildingType type; // always set to FUNCTYPE
     uint8_t* opcodeSeq;
     size_t opCodeSeqLength;
 } func;
 
 typedef struct {
+    buildingType type; // always set to MEMTYPE
     uint8_t* base;
     size_t memSize;
 } mem;
 
 typedef struct {
+    buildingType type; // always set to REGTYPE
     uint8_t* base;
     size_t filled;
 } reg;
@@ -110,20 +111,11 @@ union buildingPtr {
     reg* regPtr;
 };
 
-
 typedef struct {
-    size_t bid;
-    enum buildingType type;
-    union buildingPtr building;
-} bidMap;
-
-typedef struct {
-    bidMap* bidMaps;
-    size_t buildingCount;
     size_t traversablesBid;
     size_t collidersBid;
     size_t junctionsBid;
-} bidMapTable;
+} ReservedBids;
 
 
 /*
@@ -131,15 +123,16 @@ typedef struct {
    Holds all mutable state data for the running program.
    Ideally we should only expose this struct and use it outside this file.
 */
-
 typedef struct {
     mapData* map;
     agentsLinkedList* aliveAgentsLL;
-    bidMapTable* buildingsTable;
+    ReservedBids reservedBids;
     mapCell* spawnCell;
     enum direction spawnDirection;
     size_t baseAddressBits;
     size_t subAddressBits;
+    hashMap* addressToStoreLocMap;
+    hashMap* buildingsTable;
 } runtimeState;
 
 #endif

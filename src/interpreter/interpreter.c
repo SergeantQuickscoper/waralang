@@ -68,27 +68,27 @@ uint8_t move(agentInst* inst, runtimeState* mainRS){
     }
     else if(inst->currDir == LEFT){
         nextLoc = inst->currLoc - 1;
-        if((mainRS->map->mapMatrix - inst->currLoc) % mainRS->map->width == 0){
+        if((inst->currLoc - mainRS->map->mapMatrix) % mainRS->map->width == 0){
             fprintf(stderr, "instance of agent %s went out of bounds\n", inst->instOf->agentID);
             return 0;
         }
     }
     else if(inst->currDir == DOWN){
         nextLoc = inst->currLoc + mainRS->map->width;
-        if(nextLoc > mainRS->map->mapMatrix){
+        if(nextLoc >= mainRS->map->mapMatrix + mainRS->map->height*mainRS->map->width){
             fprintf(stderr, "instance of agent %s went out of bounds\n", inst->instOf->agentID);
             return 0;
         }
     }
     else if(inst->currDir == RIGHT){
         nextLoc = inst->currLoc + 1;
-        if((mainRS->map->mapMatrix - nextLoc) % mainRS->map->width == 0){
+        if((nextLoc - mainRS->map->mapMatrix) % mainRS->map->width == 0){
             fprintf(stderr, "instance of agent %s went out of bounds\n", inst->instOf->agentID);
             return 0;
         }
     }
 
-    if(nextLoc->bid == mainRS->buildingsTable->collidersBid){
+    if(nextLoc->bid == mainRS->reservedBids.collidersBid){
         // turn left
         if(inst->currDir == UP){
             inst->currDir = LEFT;
@@ -110,13 +110,19 @@ uint8_t move(agentInst* inst, runtimeState* mainRS){
 }
 
 uint8_t processTickAgent(agentInst* inst, runtimeState* mainRS, Trie* agentsTrie){
-    if(inst->currLoc->bid == mainRS->buildingsTable->traversablesBid){
+    // for debugging:
+    // fprintf(stderr, "dir: %u ", inst->currDir);
+    // fprintf(stderr, "symbol: %c ", inst->currLoc->symbol);
+    // fprintf(stderr, "x: %zu ", (inst->currLoc - mainRS->map->mapMatrix)%mainRS->map->width);
+    // fprintf(stderr, "y: %zu\n", (inst->currLoc - mainRS->map->mapMatrix)/mainRS->map->width);
+
+    if(inst->currLoc->bid == mainRS->reservedBids.traversablesBid){
         uint8_t moveStatus = move(inst, mainRS);
         if(moveStatus == 0){
             return 0;
         }
     }
-    else if(inst->currLoc->bid == mainRS->buildingsTable->junctionsBid){
+    else if(inst->currLoc->bid == mainRS->reservedBids.junctionsBid){
         char dir = inst->instOf->rawInstructions[inst->programCounter];
         inst->programCounter++;
         if(dir == '^'){
@@ -134,13 +140,16 @@ uint8_t processTickAgent(agentInst* inst, runtimeState* mainRS, Trie* agentsTrie
         else{
             fprintf(stderr, "expected direction character('^' / '<' / 'v' / '>')");
             fprintf(stderr, " for instance of agent %s", inst->instOf->agentID);
-            fprintf(stderr, " but encountered %c\n", dir);
+            fprintf(stderr, " but encountered %c\n(ASCII %u)", dir, dir);
+            return 0;
         }
 
         move(inst, mainRS);
     }
     
     else{
+        fprintf(stderr, "in building, to be implemented\n");
+        return 0;
         // TODO for @SamyakJainABCD: building execution
     }
 }
@@ -159,14 +168,14 @@ uint8_t interpret(runtimeState* mainRS, Trie* agentsTrie){
     size_t tick = 0;
 
     Agent* main = (Agent*)findElementTrie(agentsTrie, "main");
-    
+
     if(main==agentsTrie->notEndPtr){
         fprintf(stderr, "main agent not found in .wl file.\n");
         return 0;
     }
-    
+
     agentInst* mainInst =  spawnAgent(main, NULL, 0, mainRS);
-    
+
     if(mainInst == NULL){
         return 0;
     }

@@ -35,12 +35,14 @@
             "baseAddressSize":{
                 "type":"integer",
                 "default":5,
-                "description": "building code"
+                "description": "building code",
+                "minimum": 0
             },
             "subAddressSize":{
                 "type":"integer",
                 "default":11,
-                "description": "address of the specific word in the building."
+                "description": "address of the specific word in the building.",
+                "minimum":0
             }
         },
         "required": ["baseAddressSize", "subAddressSize"],

@@ -51,6 +51,12 @@ runtimeState* decodeWmap(char* wmapPath){
     state->map->width = uDynamIntToSizeT(width);
     fread(&bidSizeBytes, sizeof(uint8_t), 1, wmapFile);
 
+    // setting reserved bids
+    size_t bidMax = (1 << ((bidSizeBytes) * 8)) - 1;
+    state->buildingsTable->traversablesBid = bidMax;
+    state->buildingsTable->collidersBid = bidMax-1;
+    state->buildingsTable->junctionsBid = bidMax-2;
+
     uDynamInt* spawnX = createUDynamInt(widthBytes);
     fread(spawnX->base, sizeof(uint8_t), widthBytes, wmapFile);
     uDynamInt* spawnY = createUDynamInt(heightBytes);

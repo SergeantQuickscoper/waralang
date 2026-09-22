@@ -45,8 +45,9 @@ typedef struct agentInst{
     size_t programCounter;
     Trie* actualParams;
 
-    // next element in linked list of alive agents
+    // next and previous elements in linked list of alive agents
     struct agentInst* agentsLLNext;
+    struct agentInst* agentsLLPrev;
 } agentInst;
 
 
@@ -119,6 +120,9 @@ typedef struct {
 typedef struct {
     bidMap* bidMaps;
     size_t buildingCount;
+    size_t traversablesBid;
+    size_t collidersBid;
+    size_t junctionsBid;
 } bidMapTable;
 
 

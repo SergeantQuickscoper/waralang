@@ -46,7 +46,7 @@ Here is a brief description of the contents of the binary file, in order:
   containing:
   - 1 byte for the ASCII symbol on the map. The symbol for a building with a
   bid will just be the placeholder character specified in the wmapConfig.json.
-  - `bidSize` bytes will be used to specify the the bid the cell belongs to.
+  - `bidSize` bytes will be used to specify the bid the cell belongs to.
 
 - `bidMap` - (Size depends on bid type please see below) - Specifies
   information on the opcode sequence associated with each bid, excluding the

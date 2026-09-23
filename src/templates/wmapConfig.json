@@ -14,19 +14,14 @@
     },
     "buildings": [
         {
-            "FUNC": {
-                "opcodeList": [
-                    "ADD",
-                    "MULT"
-                ]
+            "MEM": {
+                "baseAddress": "CO",
+                "size": 40
             }
         },
         {
-            "FUNC": {
-                "opcodeList": [
-                    "ADD",
-                    "MULT"
-                ]
+            "REG": {
+                "regName": "AMUL"
             }
         },
         {

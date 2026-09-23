@@ -32,8 +32,17 @@ typedef struct {
     char* agentID;
     char* rawInstructions;
     char** params;
+    size_t* paramNameLengths;
     size_t paramsLength;
 } Agent;
+
+typedef struct callStackNode{
+    char* instructions;
+    size_t programCounter;
+    hashMap* params;
+
+    struct callStackNode* down;
+} callStackNode;
 
 /*
    Struct to store spawned instances of agents on the map.
@@ -42,8 +51,7 @@ typedef struct agentInst{
     Agent* instOf;
     mapCell* currLoc;
     enum direction currDir;
-    size_t programCounter;
-    Trie* actualParams;
+    callStackNode* callStackTop;
 
     // next and previous elements in linked list of alive agents
     struct agentInst* agentsLLNext;
@@ -131,6 +139,7 @@ typedef struct {
     enum direction spawnDirection;
     size_t baseAddressBits;
     size_t subAddressBits;
+    // TODO for @SergeantQuickScoper: replace with Trie & modify decoder logic
     hashMap* addressToStoreLocMap;
     hashMap* buildingsTable;
 } runtimeState;

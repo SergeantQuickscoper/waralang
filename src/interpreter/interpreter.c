@@ -16,6 +16,48 @@ void LLinsert(agentInst* inst, runtimeState* mainRS){
     }
 }
 
+// agent = NULL if not adding an agent
+void addToCallStack(agentInst* inst, char** actualParams, size_t paramsLength, char* instructions, Agent* agent){
+    callStackNode* node = malloc(sizeof(callStackNode));
+    node->instructions = instructions;
+    node->programCounter = 0;
+    
+    if(agent != NULL){
+        node->params = createHashMap(paramsLength);
+        for(size_t i = 0; i < agent->paramsLength; i++){
+            insertKey(node->params, agent->params[i], agent->paramNameLengths[i], actualParams[i]);
+        }
+    }
+    else{
+        node->params = createHashMap(0);
+    }
+
+    node->down = inst->callStackTop;
+    inst->callStackTop = node;
+}
+
+void popCallStack(agentInst* inst){
+    callStackNode* temp = inst->callStackTop;
+    inst->callStackTop = temp->down;
+
+    killHashMap(temp->params);
+    free(temp);
+}
+
+int readChar(agentInst* inst){
+    if(inst->callStackTop == NULL){
+        return -1;
+    }
+    if(inst->callStackTop->instructions[inst->callStackTop->programCounter] == '\0'){
+        popCallStack(inst);
+        return readChar(inst);
+    }
+    char res = inst->callStackTop->instructions[inst->callStackTop->programCounter];
+    inst->callStackTop->programCounter++;
+    return res;
+}
+
+
 agentInst* spawnAgent(Agent* agent, char** actualParams, size_t paramsLength, runtimeState* mainRS){
     if(mainRS->spawnCell->activeAgent != NULL){
         fprintf(stderr, "new agent spawned when spawn cell is already occupied.");
@@ -32,25 +74,12 @@ agentInst* spawnAgent(Agent* agent, char** actualParams, size_t paramsLength, ru
     }
     agentInst* inst = malloc(sizeof(agentInst));
     inst->instOf = agent;
-    inst->actualParams = createTrie();
-
-    for(size_t paramIdx = 0; paramIdx < paramsLength; paramIdx++){
-        void* res = insertElementTrie(inst->actualParams, agent->params[paramIdx], actualParams[paramIdx]);
-        if(res==(void*)-1){
-            fprintf(stderr, "in parameter names of agent %s", agent->agentID);
-            return NULL;
-        }
-        if(res != inst->actualParams->notEndPtr){
-            fprintf(stderr, "multiple parameters have same name in definition of agent %s", agent->agentID);
-            return NULL;
-        }
-    }
+    inst->callStackTop = NULL;
+    addToCallStack(inst, actualParams, paramsLength, agent->rawInstructions, agent);
 
     inst->currLoc = mainRS->spawnCell;
     mainRS->spawnCell->activeAgent = inst;
-
     inst->currDir = mainRS->spawnDirection;
-    inst->programCounter = 0;
 
     LLinsert(inst, mainRS);
 
@@ -123,8 +152,8 @@ uint8_t processTickAgent(agentInst* inst, runtimeState* mainRS, Trie* agentsTrie
         }
     }
     else if(inst->currLoc->bid == mainRS->reservedBids.junctionsBid){
-        char dir = inst->instOf->rawInstructions[inst->programCounter];
-        inst->programCounter++;
+        char dir = readChar(inst);
+
         if(dir == '^'){
             inst->currDir = UP;
         }

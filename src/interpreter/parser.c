@@ -5,7 +5,7 @@
 #include <runtimeState.h>
 
 //always put EOF in delims array. delims array must end with '\0'
-char* readWord(FILE* sourceFile, int* delims, int* delimFound, char** bufferPtr, size_t* bufferCapacityPtr){
+char* readWord(FILE* sourceFile, int* delims, int* delimFound, char** bufferPtr, size_t* bufferCapacityPtr, size_t* wordLen){
     size_t bufferSize = 0;
     size_t bufferCapacity = *bufferCapacityPtr;
     char* buffer = *bufferPtr;
@@ -29,6 +29,7 @@ char* readWord(FILE* sourceFile, int* delims, int* delimFound, char** bufferPtr,
                 }
                 memcpy(res, buffer, bufferSize);
                 res[bufferSize] = '\0';
+                *wordLen = bufferSize;
                 return res;
             }
             delimPtr++;
@@ -85,6 +86,8 @@ uint8_t parsewl(FILE* sourceFile, Trie** agntsTriePtr, char** wmapFilePath, size
         return 0;
     }
 
+    // rereading the code made me realize how bad the buffer situation is.
+    // this part of the code is terrible to work in!
     size_t charBufferCapacity = 1024;
     char* charBuffer = malloc(sizeof(char) * charBufferCapacity);
     if(charBuffer==NULL){
@@ -94,7 +97,8 @@ uint8_t parsewl(FILE* sourceFile, Trie** agntsTriePtr, char** wmapFilePath, size
 
     size_t paramBufferCapacity = 1024;
     char** paramBuffer = malloc(sizeof(char*) * paramBufferCapacity);
-    if(paramBuffer==NULL){
+    size_t* paramNameLengthBuffer = malloc(sizeof(size_t) * paramBufferCapacity);
+    if(paramBuffer==NULL || paramNameLengthBuffer==NULL){
         fprintf(stderr, "memory allocation error\n");
         return 0;
     }
@@ -103,6 +107,7 @@ uint8_t parsewl(FILE* sourceFile, Trie** agntsTriePtr, char** wmapFilePath, size
     int paramDelims[] = {')', ',', EOF, '\0'};
     int instructionDelims[] = {'!', EOF, '\0'};
     int delimFound = '\0';
+    size_t wordLen = 0;
 
     while(delimFound != EOF){
         Agent* agent = malloc(sizeof(Agent));
@@ -112,7 +117,7 @@ uint8_t parsewl(FILE* sourceFile, Trie** agntsTriePtr, char** wmapFilePath, size
         }
 
         // read agentID (!<agent-id>(parameters):)
-        agent->agentID = readWord(sourceFile, agentIdDelims, &delimFound, &charBuffer, &charBufferCapacity);
+        agent->agentID = readWord(sourceFile, agentIdDelims, &delimFound, &charBuffer, &charBufferCapacity, &wordLen);
         
         void* trieStatus = insertElementTrie(agentsTrie, agent->agentID, agent);
         if(trieStatus == (void*)-1){
@@ -135,7 +140,8 @@ uint8_t parsewl(FILE* sourceFile, Trie** agntsTriePtr, char** wmapFilePath, size
         if(fgetc(sourceFile) != ')'){
             fseek(sourceFile, -1, SEEK_CUR);
             while(1){
-                paramBuffer[paramBuffereSize] = readWord(sourceFile, paramDelims, &delimFound, &charBuffer, &charBufferCapacity);
+                paramBuffer[paramBuffereSize] = readWord(sourceFile, paramDelims, &delimFound, &charBuffer, &charBufferCapacity, &wordLen);
+                paramNameLengthBuffer[paramBuffereSize] = wordLen;
                 paramBuffereSize++;
                 if(delimFound == EOF){
                     fprintf(stderr, "reached end of file while reading paramter %zu of agent %s.\n", paramBuffereSize, agent->agentID);
@@ -149,7 +155,8 @@ uint8_t parsewl(FILE* sourceFile, Trie** agntsTriePtr, char** wmapFilePath, size
                 if(paramBuffereSize > paramBufferCapacity){
                     paramBufferCapacity *= 2;
                     paramBuffer = realloc(paramBuffer, sizeof(char*) * paramBufferCapacity);
-                    if(paramBuffer==NULL){
+                    paramNameLengthBuffer = realloc(paramNameLengthBuffer, sizeof(size_t) * paramBufferCapacity);
+                    if(paramBuffer==NULL || paramNameLengthBuffer==NULL){
                         fprintf(stderr, "memory allocation error\n");
                         return 0;
                     }
@@ -157,21 +164,25 @@ uint8_t parsewl(FILE* sourceFile, Trie** agntsTriePtr, char** wmapFilePath, size
             }
             
             agent->params = malloc(sizeof(char*) * paramBuffereSize);
-            if(agent->params==NULL){
+            agent->paramNameLengths = malloc(sizeof(size_t) * paramBuffereSize);
+            if(agent->params==NULL || agent->paramNameLengths==NULL){
                 fprintf(stderr, "memory allocation error\n");
                 return 0;
             }
             memcpy(agent->params, paramBuffer, sizeof(char*) * paramBuffereSize);
+            memcpy(agent->paramNameLengths, paramNameLengthBuffer, sizeof(size_t) * paramBuffereSize);
         }
         agent->paramsLength = paramBuffereSize;
 
-        //read code
+        //read instructions
         size_t codeSize;
-        agent->rawInstructions = readWord(sourceFile, instructionDelims, &delimFound, &charBuffer, &charBufferCapacity);
+        fgetc(sourceFile); // for ':'
+        agent->rawInstructions = readWord(sourceFile, instructionDelims, &delimFound, &charBuffer, &charBufferCapacity, &wordLen);
     }
 
     free(charBuffer);
     free(paramBuffer);
+    free(paramNameLengthBuffer);
 
     return 1;
 }

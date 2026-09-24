@@ -8,33 +8,36 @@
         "subAddressSize": 14
     },
     "spawn": {
-        "x": 2,
-        "y": 2,
+        "x": 60,
+        "y": 112,
         "direction": ">"
     },
     "buildings": [
         {
             "MEM": {
-                "baseAddress": "ISH",
-                "size": 20
-            }
-        },
-        {
-            "MEM": {
-                "baseAddress": "18K",
-                "size": 100
-            }
-        },
-        {
-            "MEM": {
-                "baseAddress": "GANDHI",
+                "baseAddress": "CO",
                 "size": 40
             }
         },
         {
-            "MEM": {
-                "baseAddress": "AZAD",
-                "size": 20
+            "REG": {
+                "regName": "AMUL"
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD",
+                    "MULT"
+                ]
+            }
+        },
+        {
+            "FUNC": {
+                "opcodeList": [
+                    "ADD",
+                    "MULT"
+                ]
             }
         },
         {

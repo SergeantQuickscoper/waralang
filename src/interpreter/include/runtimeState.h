@@ -32,29 +32,41 @@ typedef struct {
     char* agentID;
     char* rawInstructions;
     char** params;
+    size_t* paramNameLengths;
     size_t paramsLength;
 } Agent;
+
+typedef struct callStackNode{
+    char* instructions;
+    size_t programCounter;
+    hashMap* params;
+
+    struct callStackNode* down;
+} callStackNode;
 
 /*
    Struct to store spawned instances of agents on the map.
 */
-typedef struct {
+typedef struct agentInst{
     Agent* instOf;
     mapCell* currLoc;
     enum direction currDir;
-    size_t programCounter;
-    Trie* actualParams;
+    callStackNode* callStackTop;
+
+    // next and previous elements in linked list of alive agents
+    struct agentInst* agentsLLNext;
+    struct agentInst* agentsLLPrev;
 } agentInst;
 
+
 /*
-   Array of active agent instances ordered by priority in the context
-   of synchronization. Program will terminate when size reaches zero.
+    linked list of agents.
+    Used to store alive agents.
 */
 typedef struct {
-    agentInst** base;
-    size_t size;
-    size_t capacity;
-} agentTable;
+    agentInst* head;
+    agentInst* tail;
+} agentsLinkedList;
 
 
 /*
@@ -107,6 +119,13 @@ union buildingPtr {
     reg* regPtr;
 };
 
+typedef struct {
+    size_t traversablesBid;
+    size_t collidersBid;
+    size_t junctionsBid;
+} ReservedBids;
+
+
 /*
    Container for the runtime state intended to be passed between modules.
    Holds all mutable state data for the running program.
@@ -114,13 +133,16 @@ union buildingPtr {
 */
 typedef struct {
     mapData* map;
-    agentTable* aliveAgentsTable;
+    agentsLinkedList* aliveAgentsLL;
+    ReservedBids reservedBids;
     mapCell* spawnCell;
     enum direction spawnDirection;
     size_t baseAddressBits;
     size_t subAddressBits;
+    // TODO for @SergeantQuickScoper: replace with Trie & modify decoder logic
     hashMap* addressToStoreLocMap;
     hashMap* buildingsTable;
+    Trie* agentsTrie;
 } runtimeState;
 
 #endif

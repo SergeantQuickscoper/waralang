@@ -4,6 +4,10 @@
 #include <runtimeState.h>
 #include <trie.h>
 
-uint8_t interpret(runtimeState* mainRS, Trie* agentsTrie);
+/*
+    interpreter for after all structs have been initialized with data.
+*/
+
+uint8_t interpret(runtimeState* mainRS);
 
 #endif

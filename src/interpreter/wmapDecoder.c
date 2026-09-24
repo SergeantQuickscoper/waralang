@@ -50,6 +50,12 @@ runtimeState* decodeWmap(char* wmapPath){
     state->map->width = uDynamIntToSizeT(width);
     fread(&bidSizeBytes, sizeof(uint8_t), 1, wmapFile);
 
+    // setting reserved bids
+    size_t bidMax = (1 << ((bidSizeBytes) * 8)) - 1;
+    state->reservedBids.traversablesBid = bidMax;
+    state->reservedBids.collidersBid = bidMax-1;
+    state->reservedBids.junctionsBid = bidMax-2;
+
     uDynamInt* spawnX = createUDynamInt(widthBytes);
     fread(spawnX->base, sizeof(uint8_t), widthBytes, wmapFile);
     uDynamInt* spawnY = createUDynamInt(heightBytes);
@@ -76,11 +82,8 @@ runtimeState* decodeWmap(char* wmapPath){
 
     fread(&wordSizeBytes, sizeof(uint8_t), 1, wmapFile);
 
-    state->aliveAgentsTable = malloc(sizeof(agentTable));
-    state->aliveAgentsTable->capacity = 1024;
-    state->aliveAgentsTable->size = 0;
-    state->aliveAgentsTable->base = malloc(sizeof(agentInst*) *
-    state->aliveAgentsTable->capacity);
+    state->aliveAgentsLL = malloc(sizeof(agentsLinkedList));
+    state->aliveAgentsLL->head = state->aliveAgentsLL->tail = NULL;
 
     // this is to get rid of garbage values
     // also could just memset the entire state
@@ -113,7 +116,7 @@ runtimeState* decodeWmap(char* wmapPath){
            // holy redundant
            if(curr->bid > (1 << (bidSizeBytes * 8))){
             fprintf(stderr, "\nwmapDecoder error: unexpected bid %zu encountered"
-                " within cells. Value is greater than defined bidSize of %zu"
+                " within cells. Value is greater than defined bidSize of %u"
                 " bytes.\n", curr->bid, bidSizeBytes);
                 return NULL;
            }

@@ -47,7 +47,9 @@ int main(int argc, char** argv){
         return 1;
     }
 
-    uint8_t interprerStatus = interpret(mainRS, agentsTrie);
+    mainRS->agentsTrie = agentsTrie;
+
+    uint8_t interprerStatus = interpret(mainRS);
     if(interprerStatus == 0){
         fprintf(stderr, "\ninterpreter error\n");
         return 1;

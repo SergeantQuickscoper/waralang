@@ -8,6 +8,6 @@
     interpreter for after all structs have been initialized with data.
 */
 
-uint8_t interpret(runtimeState* mainRS, Trie* agentsTrie);
+uint8_t interpret(runtimeState* mainRS);
 
 #endif

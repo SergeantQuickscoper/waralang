@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <runtimeState.h>
 #include <stdlib.h>
+#include <string.h>
 
 void LLinsert(agentInst* inst, runtimeState* mainRS){
     inst->agentsLLNext = NULL;
@@ -16,22 +17,24 @@ void LLinsert(agentInst* inst, runtimeState* mainRS){
     }
 }
 
-// agent = NULL if not adding an agent
-void addToCallStack(agentInst* inst, char** actualParams, size_t paramsLength, char* instructions, Agent* agent){
+// paramsLength = 0 if not adding an agent
+void pushCallStack(agentInst* inst, char** actualParams, size_t paramsLength, char* instructions, Agent* agent){
+    // fprintf(stderr, "%s\n", instructions);
     callStackNode* node = malloc(sizeof(callStackNode));
     node->instructions = instructions;
     node->programCounter = 0;
     
-    if(agent != NULL){
+    // TODO: remove if else after hasmap accepts maxsize 1
+    if(paramsLength > 0){
         node->params = createHashMap(paramsLength);
-        for(size_t i = 0; i < agent->paramsLength; i++){
-            insertKey(node->params, agent->params[i], agent->paramNameLengths[i], actualParams[i]);
-        }
     }
     else{
-        node->params = createHashMap(0);
+        node->params = createHashMap(1);
     }
-
+    for(size_t i = 0; i < paramsLength; i++){
+        insertKey(node->params, agent->params[i], agent->paramNameLengths[i], actualParams[i]);
+    }
+    
     node->down = inst->callStackTop;
     inst->callStackTop = node;
 }
@@ -44,16 +47,80 @@ void popCallStack(agentInst* inst){
     free(temp);
 }
 
-int readChar(agentInst* inst){
+// this function might just be the best code I've ever written
+// returns -1 upon error
+int readChar(agentInst* inst, runtimeState* mainRS){
     if(inst->callStackTop == NULL){
-        return -1;
+        return '\0';
     }
     if(inst->callStackTop->instructions[inst->callStackTop->programCounter] == '\0'){
         popCallStack(inst);
-        return readChar(inst);
+        return readChar(inst, mainRS);
     }
+
     char res = inst->callStackTop->instructions[inst->callStackTop->programCounter];
     inst->callStackTop->programCounter++;
+    if(res == '{'){
+        size_t bufferSize = 0, bufferCapacity = 128;
+        char* buffer = malloc(sizeof(char) * bufferCapacity);
+        while(res!='}' && res!='('){
+            res = buffer[bufferSize++] = readChar(inst, mainRS);
+            if(bufferSize+1 > bufferCapacity){
+                bufferCapacity *= 2;
+                buffer = realloc(buffer, sizeof(char) * bufferCapacity);
+            }
+        }
+        bufferSize--;
+        buffer[bufferSize] = '\0';
+
+        char** actualParams;
+        size_t paramsLen;
+        char* instructions;
+        Agent* agent;
+
+        // agent substitution
+        if(res == '('){
+            agent = findElementTrie(mainRS->agentsTrie, buffer);
+            actualParams = malloc(sizeof(char*) * agent->paramsLength);
+            paramsLen = agent->paramsLength;
+            instructions = agent->rawInstructions;
+
+            size_t paramsId = 0;
+            res = readChar(inst, mainRS);
+            while(res != ')'){
+                if(res == '#'){
+                    bufferSize = 0;
+                    res = '\0';
+                    while(res != '#' && res != ')'){
+                        res = buffer[bufferSize++] = readChar(inst, mainRS);
+                        if(bufferSize > bufferCapacity){
+                            bufferCapacity *= 2;
+                            buffer = realloc(buffer, sizeof(char) * bufferCapacity);
+                        }
+                    }
+                    actualParams[paramsId] = malloc(sizeof(char) * (bufferSize));
+                    memcpy(actualParams[paramsId], buffer, bufferSize-1);
+                    actualParams[paramsId][bufferSize-1] = '\0';
+                    // fprintf(stderr, "%zu %zu %s\n", paramsId, bufferSize, actualParams[paramsId]);
+                    paramsId++;
+                }
+            }
+            if(paramsId != paramsLen){
+                fprintf(stderr, "wrong number of parameters in call for agent %s", agent->agentID);
+                return -1;
+            }
+            res = readChar(inst, mainRS);
+        }
+        // parameter substitution
+        else if(res == '}'){
+            agent = NULL;
+            actualParams = NULL;
+            paramsLen = 0;
+            instructions = findKey(inst->callStackTop->params, buffer, bufferSize);
+        }
+        pushCallStack(inst, actualParams, paramsLen, instructions, agent);
+        res = readChar(inst, mainRS);
+    }
     return res;
 }
 
@@ -75,7 +142,7 @@ agentInst* spawnAgent(Agent* agent, char** actualParams, size_t paramsLength, ru
     agentInst* inst = malloc(sizeof(agentInst));
     inst->instOf = agent;
     inst->callStackTop = NULL;
-    addToCallStack(inst, actualParams, paramsLength, agent->rawInstructions, agent);
+    pushCallStack(inst, actualParams, paramsLength, agent->rawInstructions, agent);
 
     inst->currLoc = mainRS->spawnCell;
     mainRS->spawnCell->activeAgent = inst;
@@ -138,7 +205,7 @@ uint8_t move(agentInst* inst, runtimeState* mainRS){
     return 1;
 }
 
-uint8_t processTickAgent(agentInst* inst, runtimeState* mainRS, Trie* agentsTrie){
+uint8_t processTickAgent(agentInst* inst, runtimeState* mainRS){
     // for debugging:
     // fprintf(stderr, "dir: %u ", inst->currDir);
     // fprintf(stderr, "symbol: %c ", inst->currLoc->symbol);
@@ -152,7 +219,11 @@ uint8_t processTickAgent(agentInst* inst, runtimeState* mainRS, Trie* agentsTrie
         }
     }
     else if(inst->currLoc->bid == mainRS->reservedBids.junctionsBid){
-        char dir = readChar(inst);
+        int dir = readChar(inst, mainRS);
+
+        if(dir == -1){
+            return 0;
+        }
 
         if(dir == '^'){
             inst->currDir = UP;
@@ -183,22 +254,22 @@ uint8_t processTickAgent(agentInst* inst, runtimeState* mainRS, Trie* agentsTrie
     }
 }
 
-uint8_t processTick(runtimeState* mainRS, Trie* agentsTrie){
+uint8_t processTick(runtimeState* mainRS){
     agentInst* iteratorLL = mainRS->aliveAgentsLL->head;
     while(iteratorLL != NULL){
-        uint8_t processTickAgentStatus = processTickAgent(iteratorLL, mainRS, agentsTrie);
+        uint8_t processTickAgentStatus = processTickAgent(iteratorLL, mainRS);
         if(processTickAgentStatus == 0){
             return 0;
         }
     }
 }
 
-uint8_t interpret(runtimeState* mainRS, Trie* agentsTrie){
+uint8_t interpret(runtimeState* mainRS){
     size_t tick = 0;
 
-    Agent* main = (Agent*)findElementTrie(agentsTrie, "main");
+    Agent* main = (Agent*)findElementTrie(mainRS->agentsTrie, "main");
 
-    if(main==agentsTrie->notEndPtr){
+    if(main==mainRS->agentsTrie->notEndPtr){
         fprintf(stderr, "main agent not found in .wl file.\n");
         return 0;
     }
@@ -210,7 +281,7 @@ uint8_t interpret(runtimeState* mainRS, Trie* agentsTrie){
     }
 
     while(1){
-        uint8_t processTickStatus = processTick(mainRS, agentsTrie);
+        uint8_t processTickStatus = processTick(mainRS);
         if(processTickStatus == 0){
             return 0;
         }

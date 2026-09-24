@@ -142,6 +142,7 @@ typedef struct {
     // TODO for @SergeantQuickScoper: replace with Trie & modify decoder logic
     hashMap* addressToStoreLocMap;
     hashMap* buildingsTable;
+    Trie* agentsTrie;
 } runtimeState;
 
 #endif

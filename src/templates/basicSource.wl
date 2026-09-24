@@ -2,7 +2,14 @@ use out.wmap
 tickrate 60
 
 !main():
-<^<<<^^^<<v8#
+<^<<{self($)}<^^^<<v8#
+
+!left():
+<
+
+
+!self(x):
+{x}
 
 !spare(x, y):
 <^<<<<<^{x}#

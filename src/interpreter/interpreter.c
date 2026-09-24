@@ -1,54 +1,15 @@
 #include <interpreter.h>
+#include <interpreterHelpers.h>
 #include <stdio.h>
-#include <runtimeState.h>
 #include <stdlib.h>
 #include <string.h>
 
-void LLinsert(agentInst* inst, runtimeState* mainRS){
-    inst->agentsLLNext = NULL;
-    if(mainRS->aliveAgentsLL->head == NULL){
-        mainRS->aliveAgentsLL->head = mainRS->aliveAgentsLL->tail = inst;
-        inst->agentsLLPrev = NULL;
-    }
-    else{
-        mainRS->aliveAgentsLL->tail->agentsLLNext = inst;
-        inst->agentsLLPrev = mainRS->aliveAgentsLL->tail;
-        mainRS->aliveAgentsLL->tail = inst;
-    }
-}
-
-// paramsLength = 0 if not adding an agent
-void pushCallStack(agentInst* inst, char** actualParams, size_t paramsLength, char* instructions, Agent* agent){
-    // fprintf(stderr, "%s\n", instructions);
-    callStackNode* node = malloc(sizeof(callStackNode));
-    node->instructions = instructions;
-    node->programCounter = 0;
-    
-    // TODO: remove if else after hasmap accepts maxsize 1
-    if(paramsLength > 0){
-        node->params = createHashMap(paramsLength);
-    }
-    else{
-        node->params = createHashMap(1);
-    }
-    for(size_t i = 0; i < paramsLength; i++){
-        insertKey(node->params, agent->params[i], agent->paramNameLengths[i], actualParams[i]);
-    }
-    
-    node->down = inst->callStackTop;
-    inst->callStackTop = node;
-}
-
-void popCallStack(agentInst* inst){
-    callStackNode* temp = inst->callStackTop;
-    inst->callStackTop = temp->down;
-
-    killHashMap(temp->params);
-    free(temp);
-}
-
-// this function might just be the best code I've ever written
-// returns -1 upon error
+/*
+    this function might just be the best code I've ever written
+    when called externally, returns next char which would appear after substitutions.
+    rest of the characters, except ',' are ret
+    returns -1 upon error, '\0' if execution is finished.
+*/
 int readChar(agentInst* inst, runtimeState* mainRS){
     if(inst->callStackTop == NULL){
         return '\0';
@@ -63,6 +24,8 @@ int readChar(agentInst* inst, runtimeState* mainRS){
     if(res == '{'){
         size_t bufferSize = 0, bufferCapacity = 128;
         char* buffer = malloc(sizeof(char) * bufferCapacity);
+
+        // read name of agent/parameter into buffer
         while(res!='}' && res!='('){
             res = buffer[bufferSize++] = readChar(inst, mainRS);
             if(bufferSize+1 > bufferCapacity){
@@ -70,7 +33,7 @@ int readChar(agentInst* inst, runtimeState* mainRS){
                 buffer = realloc(buffer, sizeof(char) * bufferCapacity);
             }
         }
-        bufferSize--;
+        bufferSize--; // bufferSize includes '}' / '('
         buffer[bufferSize] = '\0';
 
         char** actualParams;
@@ -86,30 +49,37 @@ int readChar(agentInst* inst, runtimeState* mainRS){
             instructions = agent->rawInstructions;
 
             size_t paramsId = 0;
-            res = readChar(inst, mainRS);
-            while(res != ')'){
-                if(res == '#'){
-                    bufferSize = 0;
-                    res = '\0';
-                    while(res != '#' && res != ')'){
-                        res = buffer[bufferSize++] = readChar(inst, mainRS);
-                        if(bufferSize > bufferCapacity){
-                            bufferCapacity *= 2;
-                            buffer = realloc(buffer, sizeof(char) * bufferCapacity);
-                        }
+            res = readChar(inst, mainRS); // first character after '('
+            while(res != '}'){
+                // push first character into buffer
+                bufferSize = 1;
+                buffer[0] = res;
+                res = '\0';
+                // last parameter is just ')' terminated instead of ',' terminated.
+                // No special treatment required!
+                while(res != ',' && res != ')'){
+                    res = buffer[bufferSize++] = readChar(inst, mainRS);
+                    if(bufferSize > bufferCapacity){
+                        bufferCapacity *= 2;
+                        buffer = realloc(buffer, sizeof(char) * bufferCapacity);
                     }
-                    actualParams[paramsId] = malloc(sizeof(char) * (bufferSize));
-                    memcpy(actualParams[paramsId], buffer, bufferSize-1);
-                    actualParams[paramsId][bufferSize-1] = '\0';
-                    // fprintf(stderr, "%zu %zu %s\n", paramsId, bufferSize, actualParams[paramsId]);
-                    paramsId++;
                 }
+                bufferSize--; // bufferSize includes ','
+                if(bufferSize == 1 && buffer[0]=='$'){
+                    bufferSize = 0;
+                }
+
+                res = readChar(inst, mainRS); // skip ',' / ')'
+                actualParams[paramsId] = malloc(sizeof(char) * (bufferSize+1));
+                memcpy(actualParams[paramsId], buffer, bufferSize);
+                actualParams[paramsId][bufferSize] = '\0';
+                // fprintf(stderr, "%zu %zu %s\n", paramsId, bufferSize, actualParams[paramsId]);
+                paramsId++;
             }
             if(paramsId != paramsLen){
                 fprintf(stderr, "wrong number of parameters in call for agent %s", agent->agentID);
                 return -1;
             }
-            res = readChar(inst, mainRS);
         }
         // parameter substitution
         else if(res == '}'){
@@ -119,7 +89,11 @@ int readChar(agentInst* inst, runtimeState* mainRS){
             instructions = findKey(inst->callStackTop->params, buffer, bufferSize);
         }
         pushCallStack(inst, actualParams, paramsLen, instructions, agent);
+        // skip '}'
         res = readChar(inst, mainRS);
+    }
+    else if(res == '?'){
+
     }
     return res;
 }
@@ -240,7 +214,7 @@ uint8_t processTickAgent(agentInst* inst, runtimeState* mainRS){
         else{
             fprintf(stderr, "expected direction character('^' / '<' / 'v' / '>')");
             fprintf(stderr, " for instance of agent %s", inst->instOf->agentID);
-            fprintf(stderr, " but encountered %c\n(ASCII %u)", dir, dir);
+            fprintf(stderr, " but encountered %c(ASCII %u)\n", dir, dir);
             return 0;
         }
 

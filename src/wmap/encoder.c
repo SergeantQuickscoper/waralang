@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
-#include "messages.h"
-#include "encoderSub.h"
-#include "uDynamInt.h"
+#include <messages.h>
+#include <encoderSub.h>
+#include <uDynamInt.h>
 
 int main(int argc, char** argv){
     char* appName = "wcoder";

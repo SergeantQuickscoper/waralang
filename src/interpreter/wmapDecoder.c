@@ -1,4 +1,4 @@
-#include "wmapDecoder.h"
+#include <wmapDecoder.h>
 
 runtimeState* decodeWmap(char* wmapPath){
     // temp variables to help with decoding alloc
